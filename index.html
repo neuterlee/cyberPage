@@ -256,6 +256,12 @@
       color: #111827;
       font-size: 15px;
     }
+    .recommend-plain p {
+      margin: 0 0 10px;
+    }
+    .recommend-plain p:last-child {
+      margin-bottom: 0;
+    }
 
     .step-card { background:#fff; padding: 22px 24px; }
     .step-row { display:flex; align-items:center; gap:10px; margin:18px 0 8px; font-weight:700; color:#111827; }
@@ -333,6 +339,14 @@
     .warn { color: #8a6519; }
     .tips {
       border: 1px solid #d6dde8; background:#f9fafb; border-radius:6px; padding:12px; font-size:13px; color:#1f2d42;
+    }
+    .tips a {
+      color: var(--blue);
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .tips a:hover {
+      text-decoration: underline;
     }
     .coach {
       margin: 0 0 12px;
@@ -482,15 +496,10 @@
       <h1 class="new-title">Create a stronger Monash <span class="blue">passphrase</span></h1>
       <p class="title-reason">Use this page to choose a passphrase that is easier to remember and harder for others to guess.</p>
 
-      <div class="staff-manager">
-        <strong>Academic staff: make this easier with your free password manager</strong>
-        You can create and save a strong unique password without having to remember every detail yourself.
-        <a href="#">How to get and use the Monash password manager</a>
-      </div>
-
       <div class="recommend-plain">
         <strong>Recommended approach</strong>
-        Try 4 or more unrelated words, such as river • coffee • galaxy • piano. If you choose 8-12 characters instead, include at least three types: uppercase letters, lowercase letters, numbers and symbols.
+        <p>Use 4 or more unrelated words. This usually gets you past 13 characters and can stay all lower case.</p>
+        <p>Prefer a shorter password? Use 8-12 characters with at least three types: uppercase letters, lowercase letters, numbers and symbols.</p>
       </div>
 
       <div class="step-card">
@@ -498,7 +507,7 @@
         <div class="input-row"><input id="newPassphraseInput" type="password" placeholder="Type your new passphrase" /><span class="eye">⊘</span></div>
 
         <div class="strength"><strong>Strength</strong><span id="strengthValue" class="strength-value">Weak</span><div id="strengthBars" class="bars"><span></span><span></span><span></span><span></span></div></div>
-        <div class="strength-hint"><span class="hint-icon">ⓘ</span><span>Easier safer path: use 13+ characters. It can be all lower case.</span></div>
+        <div class="strength-hint"><span class="hint-icon">ⓘ</span><span>Easier safer path: use 13+ characters. It can be all lower case and harder to crack.</span></div>
 
         <div class="feedback-wrap">
           <div class="checks">
@@ -508,7 +517,7 @@
             <div id="checkReuse" class="check-line warn-state check-hidden">Avoid using an old password or small changes</div>
             <div id="checkMatch" class="check-line warn-state check-hidden">Confirmation does not match yet</div>
           </div>
-          <div class="tips"><strong>Why this helps</strong><br><br>Longer passphrases are harder to guess, but can still be easier to remember.</div>
+          <div class="tips"><strong>Free password manager</strong><br><br>Academic staff can use the Monash password manager to create and save a strong password for Monash services.<br><br><a href="#">How to get and use it</a></div>
         </div>
 
         <div id="stepTwo" class="step-row"><span class="num">2</span>Confirm your new passphrase</div>
