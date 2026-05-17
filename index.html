@@ -172,16 +172,16 @@
       padding-top: 34px;
     }
     .new-wrap {
-      max-width: 960px;
+      max-width: 820px;
       margin: 0 auto;
       background: #fff;
       border: 1px solid #d9d9d9;
       border-radius: 4px;
       box-shadow: 0 4px 22px rgba(0,0,0,0.08);
-      padding: 40px 58px 34px;
+      padding: 42px 50px 36px;
     }
     .new-top { display:flex; justify-content:center; align-items:flex-start; position: relative; }
-    .new-top .logo { justify-content: center; margin-bottom: 34px; }
+    .new-top .logo { justify-content: center; margin-bottom: 30px; }
     .get-help {
       position: absolute;
       right: 0;
@@ -192,11 +192,11 @@
       text-decoration: none;
     }
     .get-help:hover { text-decoration: underline; }
-    .new-title { text-align:center; font-size:30px; line-height:1.22; margin: 0 0 22px; color:#111; font-weight:700; }
+    .new-title { text-align:center; font-size:30px; line-height:1.22; margin: 0 0 18px; color:#111; font-weight:700; }
     .new-title .blue { color: var(--blue); }
     .title-reason {
       max-width: 680px;
-      margin: -14px auto 22px;
+      margin: -8px auto 28px;
       text-align: center;
       font-size: 14px;
       line-height: 1.45;
@@ -209,37 +209,56 @@
       color: #111827;
     }
 
-    .info, .recommend-block, .step-card {
+    .info, .step-card {
       border: 1px solid #d6dde8;
       background: var(--blue-soft);
       border-radius: 6px;
       margin-bottom: 14px;
       padding: 16px 18px;
     }
+    .staff-manager {
+      border-left: 3px solid var(--blue);
+      padding: 2px 0 2px 12px;
+      margin: 0 0 22px;
+      font-size: 13px;
+      line-height: 1.45;
+      color: #374151;
+    }
+    .staff-manager strong {
+      display: block;
+      margin-bottom: 4px;
+      color: #111827;
+      font-size: 14px;
+    }
+    .staff-manager a {
+      display: inline-block;
+      margin-top: 8px;
+      color: var(--blue);
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .staff-manager a:hover {
+      text-decoration: underline;
+    }
     .info { display:flex; gap:14px; align-items:flex-start; }
     .info .icon { font-size: 28px; color: var(--blue); line-height: 1; }
     .info p { margin:0; font-size:15px; line-height:1.45; color:#1f2d42; }
 
-    .guide {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 14px;
-      background: transparent;
-      padding: 0;
-      border: 0;
-      margin: 10px 0 0;
+    .recommend-plain {
+      margin: 0 0 22px;
+      font-size: 13px;
+      line-height: 1.45;
+      color: #374151;
     }
-    .g-item {
-      font-size:13px;
-      color:#1f2d42;
-      padding: 0 0 0 12px;
-      border-left: 3px solid #d6dde8;
-      background: transparent;
+    .recommend-plain strong {
+      display: block;
+      margin-bottom: 4px;
+      color: #111827;
+      font-size: 15px;
     }
-    .g-item b { display:block; font-size:13px; color: #111827; margin-bottom: 3px; }
 
-    .step-card { background:#fff; padding: 18px 22px; }
-    .step-row { display:flex; align-items:center; gap:10px; margin:12px 0 8px; font-weight:700; color:#111827; }
+    .step-card { background:#fff; padding: 22px 24px; }
+    .step-row { display:flex; align-items:center; gap:10px; margin:18px 0 8px; font-weight:700; color:#111827; }
     .step-row:first-child { margin-top: 0; }
     .step-row.complete { color: #166534; }
     .step-row.active { color: var(--blue-dark); }
@@ -262,14 +281,51 @@
       background: transparent;
     }
     .eye { color:#344a69; }
-    .strength { display:flex; align-items:center; gap:8px; margin:10px 0 12px; font-size:13px; }
+    .strength { display:flex; align-items:center; gap:8px; margin:14px 0 14px; font-size:13px; }
     .bars { display:flex; gap:4px; }
     .bars span { width:34px; height:6px; border-radius:8px; background:#d1d9e6; }
     .bars span:first-child { background: var(--blue); }
+    .strength-hint {
+      margin: -6px 0 14px;
+      font-size: 13px;
+      color: #4b5563;
+      display: flex;
+      gap: 6px;
+      align-items: baseline;
+    }
+    .strength-hint .hint-icon {
+      color: var(--blue);
+      font-weight: 700;
+    }
 
-    .feedback-wrap { display:grid; grid-template-columns: 1fr 180px; gap:16px; }
+    .feedback-wrap { display:grid; grid-template-columns: 1fr 180px; gap:18px; margin-bottom: 4px; }
     .checks { font-size:13px; line-height:1.65; }
-    .check-line { color: #8a6519; }
+    .check-line { color: #8a6519; display: flex; align-items: baseline; gap: 7px; }
+    .check-line.check-hidden { display: none; }
+    .check-line::before {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 16px;
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1;
+      transform: translateY(2px);
+    }
+    .check-line.ok-state::before {
+      content: "✓";
+      color: #fff;
+      background: var(--ok);
+    }
+    .check-line.warn-state::before {
+      content: "!";
+      color: #7a560d;
+      background: #f7e8c7;
+      border: 1px solid #e0c078;
+    }
     .check-line.ok-state { color: var(--ok); }
     .check-line.warn-state { color: #8a6519; }
     .strength-value { font-weight: 700; color: #1f3550; }
@@ -289,7 +345,7 @@
     }
     .update {
       width: 100%; height: 42px; border: 0; border-radius: 4px; background: var(--blue);
-      color: #fff; font-size: 15px; font-weight: 700; margin: 14px 0 12px;
+      color: #fff; font-size: 15px; font-weight: 700; margin: 20px 0 14px;
     }
     .update:hover { background: var(--blue-dark); }
     .update:disabled {
@@ -352,7 +408,6 @@
 
     @media (max-width: 980px) {
       .new-title, .old-title { font-size: 30px; }
-      .guide { grid-template-columns: 1fr; }
       .feedback-wrap { grid-template-columns: 1fr; }
       .logo img { width: 130px; }
       .btn, .update { font-size: 20px; }
@@ -365,9 +420,8 @@
       <div class="intro-icon">i</div>
       <h2 id="introTitle">Before you create a passphrase</h2>
       <p>
-        Your passphrase helps protect access to your Monash services, teaching,
-        research and personal information. Choosing a strong passphrase is an
-        important decision.
+        Your passphrase protects more than your account. It helps secure access
+        to the Monash systems used for study, teaching, research and support.
       </p>
       <button id="introContinue" type="button">Continue</button>
     </div>
@@ -428,14 +482,15 @@
       <h1 class="new-title">Create a stronger Monash <span class="blue">passphrase</span></h1>
       <p class="title-reason">Use this page to choose a passphrase that is easier to remember and harder for others to guess.</p>
 
-      <div class="recommend-block">
-        <div id="coachMessage" class="coach">Start with a memorable phrase of 3-4 unrelated words.</div>
-        <h2 class="recommend-title">Recommended passphrase approach</h2>
-        <div class="guide">
-          <div class="g-item"><b>13+ characters:</b> use a longer phrase</div>
-          <div class="g-item"><b>4+ unrelated words:</b> river • coffee • galaxy • piano</div>
-          <div class="g-item"><b>Avoid personal details:</b> names, birthdays, IDs</div>
-        </div>
+      <div class="staff-manager">
+        <strong>Academic staff: make this easier with your free password manager</strong>
+        You can create and save a strong unique password without having to remember every detail yourself.
+        <a href="#">How to get and use the Monash password manager</a>
+      </div>
+
+      <div class="recommend-plain">
+        <strong>Recommended approach</strong>
+        Try 4 or more unrelated words, such as river • coffee • galaxy • piano. If you choose 8-12 characters instead, include at least three types: uppercase letters, lowercase letters, numbers and symbols.
       </div>
 
       <div class="step-card">
@@ -443,16 +498,17 @@
         <div class="input-row"><input id="newPassphraseInput" type="password" placeholder="Type your new passphrase" /><span class="eye">⊘</span></div>
 
         <div class="strength"><strong>Strength</strong><span id="strengthValue" class="strength-value">Weak</span><div id="strengthBars" class="bars"><span></span><span></span><span></span><span></span></div></div>
+        <div class="strength-hint"><span class="hint-icon">ⓘ</span><span>Easier safer path: use 13+ characters. It can be all lower case.</span></div>
 
         <div class="feedback-wrap">
           <div class="checks">
-            <div id="checkLength" class="check-line warn-state">⚠️ At least 13 characters</div>
-            <div id="checkBreach" class="check-line warn-state">⚠️ Not found in known breached-password lists</div>
-            <div id="checkPersonal" class="check-line warn-state">⚠️ Avoid your username, name or Monash ID</div>
-            <div id="checkReuse" class="check-line warn-state">⚠️ Avoid using an old password or small changes</div>
-            <div id="checkMatch" class="check-line warn-state">⚠️ Confirmation does not match yet</div>
+            <div id="checkLength" class="check-line warn-state check-hidden">At least 13 characters</div>
+            <div id="checkBreach" class="check-line warn-state check-hidden">Not found in known breached-password lists</div>
+            <div id="checkPersonal" class="check-line warn-state check-hidden">Avoid your username, name or Monash ID</div>
+            <div id="checkReuse" class="check-line warn-state check-hidden">Avoid using an old password or small changes</div>
+            <div id="checkMatch" class="check-line warn-state check-hidden">Confirmation does not match yet</div>
           </div>
-          <div class="tips"><strong>💡 Tips</strong><br><br>Add another word instead of just a number or symbol.</div>
+          <div class="tips"><strong>Why this helps</strong><br><br>Longer passphrases are harder to guess, but can still be easier to remember.</div>
         </div>
 
         <div id="stepTwo" class="step-row"><span class="num">2</span>Confirm your new passphrase</div>
@@ -463,26 +519,6 @@
 
         <button id="updateButton" class="update" type="button" disabled>Complete the checks to continue</button>
         <p class="note">We check new passphrases against a database of over 1 billion stolen passwords.</p>
-        <div class="support-strip">
-          <div class="support-actions">
-            <details class="rules-panel">
-              <summary>View full password rules</summary>
-              <ul>
-                <li>Use at least 8 characters.</li>
-                <li>Use 13 or more characters when possible.</li>
-                <li>Shorter passwords need a mix of uppercase letters, lowercase letters, numbers and symbols.</li>
-                <li>Do not reuse one of your last 24 passwords.</li>
-                <li>Do not include your username or any part of your name.</li>
-                <li>Wait 24 hours after changing your password before changing it again.</li>
-              </ul>
-            </details>
-            <a href="#">Get help</a>
-            <a href="#">Password manager guidance</a>
-          </div>
-          <div class="manager-note">
-            Using a password manager? You can paste a generated password here. This reduces memory burden and helps avoid reusing old passwords.
-          </div>
-        </div>
       </div>
     </div>
   </section>
@@ -513,13 +549,16 @@
     const stepOne = document.getElementById('stepOne');
     const stepTwo = document.getElementById('stepTwo');
     const stepThree = document.getElementById('stepThree');
-    const coachMessage = document.getElementById('coachMessage');
     const updateButton = document.getElementById('updateButton');
 
     function setCheck(el, okText, warnText, ok) {
       el.classList.toggle('ok-state', ok);
       el.classList.toggle('warn-state', !ok);
-      el.textContent = ok ? `✅ ${okText}` : `⚠️ ${warnText}`;
+      el.textContent = ok ? okText : warnText;
+    }
+
+    function showCheck(el, visible) {
+      el.classList.toggle('check-hidden', !visible);
     }
 
     function updateNewPageFeedback() {
@@ -527,20 +566,40 @@
       const confirm = (confirmInput.value || '').trim();
       const lower = value.toLowerCase();
       const has13 = value.length >= 13;
+      const hasMinLength = value.length >= 8;
+      const hasUpper = /[A-Z]/.test(value);
+      const hasLower = /[a-z]/.test(value);
+      const hasNumber = /[0-9]/.test(value);
+      const hasSymbol = /[^A-Za-z0-9]/.test(value);
+      const typeCount = [hasUpper, hasLower, hasNumber, hasSymbol].filter(Boolean).length;
+      const shortPasswordReady = hasMinLength && !has13 && typeCount >= 3;
+      const policyReady = has13 || shortPasswordReady;
       const hasBreachRisk = ['password', 'monash', '1234', 'qwerty'].some(t => lower.includes(t));
       const hasPersonalHint = ['monash', 'username', 'student', 'id'].some(t => lower.includes(t));
       const looksLikeSmallChange = /\\d$/.test(value) || /(2024|2025|2026)$/.test(value);
       const matches = confirm.length > 0 && value === confirm;
       const hasCurrent = (currentInput.value || '').trim().length > 0;
 
-      setCheck(checkLength, 'At least 13 characters', 'At least 13 characters', has13);
+      let lengthOkText = '13+ characters: complexity not required';
+      let lengthWarnText = 'Use at least 8 characters';
+      if (hasMinLength && !has13) {
+        lengthOkText = `Short password valid: ${typeCount}/4 character types`;
+        lengthWarnText = `Short passwords need at least 3 types: uppercase, lowercase, numbers, symbols (${typeCount}/4)`;
+      }
+
+      setCheck(checkLength, lengthOkText, lengthWarnText, policyReady);
+      showCheck(checkLength, value.length > 0 && !policyReady);
+      showCheck(checkBreach, policyReady);
+      showCheck(checkPersonal, policyReady && hasPersonalHint);
+      showCheck(checkReuse, policyReady && looksLikeSmallChange);
+      showCheck(checkMatch, confirm.length > 0);
       setCheck(checkBreach, 'Not found in known breached-password lists', 'Looks like a common/breached pattern', value.length > 0 && !hasBreachRisk);
       setCheck(checkPersonal, 'No obvious username/name/ID hints detected', 'Avoid your username, name or Monash ID', value.length > 0 && !hasPersonalHint);
       setCheck(checkReuse, 'Does not look like a simple old-password change', 'Avoid using an old password or small changes', value.length > 0 && !looksLikeSmallChange);
       setCheck(checkMatch, 'Confirmation matches', 'Confirmation does not match yet', matches);
 
       let score = 0;
-      if (has13) score += 1;
+      if (policyReady) score += 1;
       if (!hasBreachRisk && value.length > 0) score += 1;
       if (!hasPersonalHint && value.length > 0) score += 1;
       if (!looksLikeSmallChange && value.length > 0) score += 1;
@@ -551,31 +610,13 @@
         bar.style.background = i < score ? '#006dae' : '#d1d9e6';
       });
 
-      const passphraseReady = score >= 3 && has13;
+      const passphraseReady = score >= 3 && policyReady;
       stepOne.classList.toggle('complete', passphraseReady);
       stepOne.classList.toggle('active', !passphraseReady);
       stepTwo.classList.toggle('complete', matches);
       stepTwo.classList.toggle('active', passphraseReady && !matches);
       stepThree.classList.toggle('complete', hasCurrent);
       stepThree.classList.toggle('active', passphraseReady && matches && !hasCurrent);
-
-      if (!value) {
-        coachMessage.textContent = 'Start with a memorable phrase of 3-4 unrelated words.';
-      } else if (!has13) {
-        coachMessage.textContent = 'Add another unrelated word instead of relying on symbols or numbers.';
-      } else if (hasBreachRisk) {
-        coachMessage.textContent = 'Avoid common words, keyboard patterns, or anything close to password.';
-      } else if (hasPersonalHint) {
-        coachMessage.textContent = 'Remove personal or Monash-specific details so it is harder to guess.';
-      } else if (looksLikeSmallChange) {
-        coachMessage.textContent = 'Try a fresh phrase instead of changing only a number or year.';
-      } else if (!matches) {
-        coachMessage.textContent = 'Good. Now re-type the same passphrase to confirm it.';
-      } else if (!hasCurrent) {
-        coachMessage.textContent = 'Almost there. Enter your current password to authorise the change.';
-      } else {
-        coachMessage.textContent = 'Ready to update. Your passphrase meets the visible checks.';
-      }
 
       const ready = passphraseReady && matches && hasCurrent && !hasBreachRisk && !hasPersonalHint && !looksLikeSmallChange;
       updateButton.disabled = !ready;
