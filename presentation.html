@@ -61,6 +61,76 @@
 
     .site-frame { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: #fff; }
     .stage.block-site .site-frame { pointer-events: none; }
+    .slide-media {
+      position: absolute;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 36px;
+      background: #edf1f6;
+      z-index: 4;
+    }
+    .slide-media.visible { display: flex; }
+    .slide-media img {
+      max-width: 100%;
+      max-height: 100%;
+      border: 1px solid #ccd5e2;
+      border-radius: 8px;
+      box-shadow: 0 16px 40px rgba(7, 29, 55, 0.14);
+      object-fit: contain;
+      background: #fff;
+    }
+    .slide-intro {
+      position: absolute;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 5;
+      pointer-events: none;
+    }
+    .slide-intro.visible { display: flex; }
+    .slide-intro .curtain {
+      position: absolute;
+      inset: 0;
+      background: rgba(7, 19, 35, 0.72);
+      animation: curtain-open 3000ms ease forwards;
+      transform-origin: left center;
+    }
+    .slide-intro .intro-card {
+      position: relative;
+      background: rgba(255, 255, 255, 0.97);
+      border: 1px solid #bfd1e8;
+      border-radius: 12px;
+      padding: 22px 24px;
+      width: min(620px, 80%);
+      box-shadow: 0 20px 45px rgba(7, 29, 55, 0.25);
+      animation: card-fade 3000ms ease forwards;
+    }
+    .slide-intro h2 {
+      margin: 0 0 6px;
+      color: var(--mono-navy);
+      font-size: 34px;
+      letter-spacing: -0.01em;
+    }
+    .slide-intro p {
+      margin: 0;
+      color: #2f425a;
+      font-size: 18px;
+      line-height: 1.4;
+    }
+    @keyframes curtain-open {
+      0% { opacity: 1; transform: scaleX(1); }
+      70% { opacity: 1; transform: scaleX(1); }
+      100% { opacity: 0; transform: scaleX(0); }
+    }
+    @keyframes card-fade {
+      0% { opacity: 0; transform: translateY(14px) scale(0.98); }
+      20% { opacity: 1; transform: translateY(0) scale(1); }
+      80% { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(-8px) scale(0.99); }
+    }
 
     .spotlight {
       position: absolute;
@@ -220,6 +290,16 @@
 
     <section id="stage" class="stage block-site" aria-label="Presentation stage">
       <iframe id="siteFrame" class="site-frame" src="./index.html" title="Live Monash password prototype"></iframe>
+      <div id="mediaSlide" class="slide-media" aria-hidden="true">
+        <img id="mediaSlideImage" alt="Legacy Monash password page reference" />
+      </div>
+      <div id="introAnimation" class="slide-intro" aria-hidden="true">
+        <div class="curtain"></div>
+        <div class="intro-card">
+          <h2>Monash password redesign</h2>
+          <p>Opening the renewed page experience</p>
+        </div>
+      </div>
       <div id="spotlight" class="spotlight" aria-hidden="true">
         <span class="resize-handle resize-right" data-resize="right" aria-hidden="true"></span>
         <span class="resize-handle resize-bottom" data-resize="bottom" aria-hidden="true"></span>
@@ -249,6 +329,9 @@
     const deck = document.getElementById('deck');
     const frame = document.getElementById('siteFrame');
     const spotlight = document.getElementById('spotlight');
+    const mediaSlide = document.getElementById('mediaSlide');
+    const mediaSlideImage = document.getElementById('mediaSlideImage');
+    const introAnimation = document.getElementById('introAnimation');
     const introNote = document.getElementById('introNote');
     const callout = document.getElementById('callout');
     const editToggle = document.getElementById('editToggle');
@@ -273,8 +356,24 @@
 
     const defaultSlides = [
       {
+        id: 'legacy-reference',
+        label: 'Legacy page snapshot',
+        mode: 'media',
+        media: {
+          src: './assets/legacy-password-page.png'
+        }
+      },
+      {
+        id: 'transition-open',
+        label: 'Transition to redesigned page',
+        mode: 'transition',
+        intro: false,
+        dim: false
+      },
+      {
         id: 'opening-banner',
         label: 'Opening banner',
+        mode: 'live',
         intro: true,
         dim: false
       },
@@ -563,6 +662,7 @@
     let renderedSlideId = null;
     let drag = null;
     let autosaveTimer = null;
+    let introAnimationTimer = null;
 
     function deepClone(value) {
       if (typeof structuredClone === 'function') return structuredClone(value);
@@ -884,17 +984,45 @@
     function render(force = false) {
       const slide = currentSlide();
       const index = currentIndex();
-      const shouldRebuildPanels = force || renderedSlideId !== slide.id;
-      setIframeIntro(slide.intro);
-      if (shouldRebuildPanels) {
-        setPanelContent(introNote, slide.note);
-        setPanelContent(callout, slide.callout);
-        renderedSlideId = slide.id;
-      } else {
-        introNote.classList.toggle('visible', Boolean(slide.note));
-        callout.classList.toggle('visible', Boolean(slide.callout));
+      const mode = slide.mode || 'live';
+      const isLive = mode === 'live';
+      const showMedia = mode === 'media';
+      const showTransition = mode === 'transition';
+
+      mediaSlide.classList.toggle('visible', showMedia);
+      introAnimation.classList.toggle('visible', showTransition);
+      frame.style.visibility = showMedia ? 'hidden' : 'visible';
+      frame.style.pointerEvents = showMedia ? 'none' : '';
+      if (showMedia) {
+        mediaSlideImage.src = slide.media?.src || '';
       }
-      setSpotlight(slide.dim ? slide.spot : null);
+
+      clearTimeout(introAnimationTimer);
+      if (showTransition) {
+        introAnimationTimer = setTimeout(() => {
+          introAnimation.classList.remove('visible');
+        }, 3000);
+      }
+
+      if (!isLive) {
+        introNote.classList.remove('visible');
+        callout.classList.remove('visible');
+        spotlight.classList.remove('visible');
+      }
+
+      const shouldRebuildPanels = force || renderedSlideId !== slide.id;
+      if (isLive) {
+        setIframeIntro(slide.intro);
+        if (shouldRebuildPanels) {
+          setPanelContent(introNote, slide.note);
+          setPanelContent(callout, slide.callout);
+          renderedSlideId = slide.id;
+        } else {
+          introNote.classList.toggle('visible', Boolean(slide.note));
+          callout.classList.toggle('visible', Boolean(slide.callout));
+        }
+        setSpotlight(slide.dim ? slide.spot : null);
+      }
       setEditable(editToggle.checked);
       slideLabel.textContent = `Step ${index + 1} / ${workingSlides.length}: ${slide.label}`;
       progressFill.style.width = `${((index + 1) / workingSlides.length) * 100}%`;
