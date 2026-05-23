@@ -50,8 +50,9 @@ function readRequestBody(req) {
 
 function validateState(state) {
   if (!state || typeof state !== 'object') return 'State must be an object';
-  if (state.schemaVersion !== 5) return 'schemaVersion must be 5';
+  if (state.schemaVersion !== 6) return 'schemaVersion must be 6';
   if (typeof state.currentSlideId !== 'string') return 'currentSlideId must be a string';
+  if (!Array.isArray(state.slideOrder)) return 'slideOrder must be an array';
   if (!state.slidesById || typeof state.slidesById !== 'object') return 'slidesById must be an object';
   return null;
 }

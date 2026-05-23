@@ -1,668 +1,1502 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Monash Password Redesign - Guided Presentation</title>
+  <title>Monash Password Redesign - Presentation Editor</title>
   <style>
     :root {
       --mono-blue: #006dae;
-      --mono-blue-dark: #005a9c;
+      --mono-blue-dark: #00558b;
       --mono-navy: #002145;
-      --bg: #eef2f7;
-      --surface: #ffffff;
-      --border: #c9d6e8;
-      --text: #132238;
-      --muted: #5a6678;
-      --shadow: rgba(6, 24, 44, 0.16);
-      --shade: rgba(10, 21, 38, 0.56);
+      --bg: #eaf0f6;
+      --panel: #ffffff;
+      --panel-alt: #f6f9fc;
+      --border: #c8d5e5;
+      --border-strong: #98b3cf;
+      --text: #15263a;
+      --muted: #5b6b7d;
+      --shadow: 0 18px 50px rgba(12, 31, 55, 0.14);
+      --shade: rgba(9, 18, 33, 0.62);
+      --spot-outline: rgba(0, 109, 174, 0.9);
+      --selected: #006dae;
     }
 
     * { box-sizing: border-box; }
     html, body { margin: 0; min-height: 100%; }
     body {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 18px;
-      font-family: Roboto, Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(0, 109, 174, 0.07), transparent 30%),
+        linear-gradient(180deg, #eff4f9 0%, #e8eef5 100%);
       color: var(--text);
-      background: var(--bg);
+      font-family: Arial, Helvetica, sans-serif;
     }
 
-    .deck { width: min(1600px, calc(100vw - 28px)); display: grid; gap: 10px; }
-    .topbar, .bottombar {
+    .workspace {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 18px;
+      gap: 14px;
+    }
+
+    .topbar, .bottombar, .author-panel {
+      background: rgba(255, 255, 255, 0.96);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 12px 28px rgba(18, 40, 66, 0.08);
+    }
+
+    .topbar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 14px;
-      background: rgba(255, 255, 255, 0.94);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 10px 12px;
-      box-shadow: 0 8px 24px rgba(22, 45, 75, 0.08);
+      gap: 16px;
+      padding: 12px 16px;
     }
 
-    .title-group { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-    .deck-title { margin: 0; font-size: 16px; color: var(--mono-navy); font-weight: 800; letter-spacing: -0.01em; }
-    .deck-subtitle { margin: 0; color: var(--muted); font-size: 12px; }
-    .mode-row { display: inline-flex; align-items: center; gap: 10px; color: var(--muted); font-size: 13px; white-space: nowrap; }
+    .title-group { min-width: 0; }
+    .title-group h1 {
+      margin: 0;
+      color: var(--mono-navy);
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+    }
+    .title-group p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .topbar-actions, .toggle-row, .toolbar-group, .nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .shell {
+      display: grid;
+      grid-template-columns: 320px minmax(0, 1fr);
+      gap: 14px;
+      min-height: 0;
+      flex: 1;
+    }
+
+    .author-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      padding: 14px;
+      min-height: 0;
+    }
+
+    .panel-section {
+      display: grid;
+      gap: 10px;
+    }
+
+    .panel-section h2 {
+      margin: 0;
+      color: var(--mono-navy);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .panel-subtext {
+      margin: -4px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .slide-list, .item-list {
+      display: grid;
+      gap: 8px;
+      overflow: auto;
+      min-height: 0;
+      max-height: 30vh;
+      padding-right: 4px;
+    }
+
+    .slide-card, .item-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--panel-alt);
+      padding: 10px;
+      cursor: pointer;
+      transition: border-color 180ms ease, background 180ms ease, transform 180ms ease;
+    }
+
+    .slide-card.active, .item-card.active {
+      border-color: var(--selected);
+      background: rgba(0, 109, 174, 0.08);
+      transform: translateY(-1px);
+    }
+
+    .slide-card strong, .item-card strong {
+      display: block;
+      font-size: 13px;
+      color: var(--mono-navy);
+      margin-bottom: 4px;
+    }
+
+    .slide-card span, .item-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.4;
+    }
+
+    .button-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .button-grid.single {
+      grid-template-columns: 1fr;
+    }
+
+    .canvas-panel {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      gap: 12px;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .toolbar-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      flex-wrap: wrap;
+    }
+
+    .stage-shell {
+      background: rgba(255, 255, 255, 0.82);
+      border: 1px solid rgba(171, 190, 210, 0.85);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: var(--shadow);
+      min-height: 0;
+    }
 
     .stage {
       position: relative;
       width: 100%;
       aspect-ratio: 16 / 9;
       overflow: hidden;
+      border-radius: 12px;
       background: #fff;
       border: 1px solid var(--border);
-      border-radius: 10px;
-      box-shadow: 0 18px 50px var(--shadow);
     }
 
-    .site-frame { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: #fff; }
-    .stage.block-site .site-frame { pointer-events: none; }
-    .slide-media {
+    .site-frame,
+    .media-backdrop,
+    .transition-layer,
+    .overlay-layer {
       position: absolute;
       inset: 0;
+    }
+
+    .site-frame {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #fff;
+    }
+
+    .stage.block-site .site-frame { pointer-events: none; }
+
+    .media-backdrop {
       display: none;
       align-items: center;
       justify-content: center;
       padding: 36px;
-      background: #edf1f6;
-      z-index: 4;
-    }
-    .slide-media.visible { display: flex; }
-    .slide-media img {
-      max-width: 100%;
-      max-height: 100%;
-      border: 1px solid #ccd5e2;
-      border-radius: 8px;
-      box-shadow: 0 16px 40px rgba(7, 29, 55, 0.14);
-      object-fit: contain;
-      background: #fff;
-    }
-    .slide-intro {
-      position: absolute;
-      inset: 0;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 5;
-      pointer-events: none;
-    }
-    .slide-intro.visible { display: flex; }
-    .slide-intro .curtain {
-      position: absolute;
-      inset: 0;
-      background: rgba(7, 19, 35, 0.72);
-      animation: curtain-open 3000ms ease forwards;
-      transform-origin: left center;
-    }
-    .slide-intro .intro-card {
-      position: relative;
-      background: rgba(255, 255, 255, 0.97);
-      border: 1px solid #bfd1e8;
-      border-radius: 12px;
-      padding: 22px 24px;
-      width: min(620px, 80%);
-      box-shadow: 0 20px 45px rgba(7, 29, 55, 0.25);
-      animation: card-fade 3000ms ease forwards;
-    }
-    .slide-intro h2 {
-      margin: 0 0 6px;
-      color: var(--mono-navy);
-      font-size: 34px;
-      letter-spacing: -0.01em;
-    }
-    .slide-intro p {
-      margin: 0;
-      color: #2f425a;
-      font-size: 18px;
-      line-height: 1.4;
-    }
-    @keyframes curtain-open {
-      0% { opacity: 1; transform: scaleX(1); }
-      70% { opacity: 1; transform: scaleX(1); }
-      100% { opacity: 0; transform: scaleX(0); }
-    }
-    @keyframes card-fade {
-      0% { opacity: 0; transform: translateY(14px) scale(0.98); }
-      20% { opacity: 1; transform: translateY(0) scale(1); }
-      80% { opacity: 1; transform: translateY(0) scale(1); }
-      100% { opacity: 0; transform: translateY(-8px) scale(0.99); }
+      background: #edf2f7;
+      z-index: 1;
     }
 
-    .spotlight {
-      position: absolute;
-      left: var(--x);
-      top: var(--y);
-      width: var(--w);
-      height: var(--h);
-      border: 2px solid rgba(0, 109, 174, 0.92);
-      border-radius: 8px;
-      box-shadow: 0 0 0 9999px var(--shade), 0 0 0 6px rgba(0, 109, 174, 0.12);
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 220ms ease, border-color 220ms ease;
+    .media-backdrop.visible { display: flex; }
+
+    .media-backdrop img {
+      max-width: 100%;
+      max-height: 100%;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      box-shadow: 0 16px 40px rgba(10, 25, 44, 0.16);
+      background: #fff;
+      object-fit: contain;
     }
-    .spotlight.visible { opacity: 1; pointer-events: auto; }
-    .spotlight::after {
+
+    .transition-layer {
+      display: none;
+      z-index: 4;
+      pointer-events: none;
+    }
+
+    .transition-layer.visible { display: block; }
+
+    .transition-curtain {
+      position: absolute;
+      inset: 0;
+      background: rgba(7, 19, 35, 0.76);
+      transform-origin: left center;
+    }
+
+    .transition-layer.animate .transition-curtain {
+      animation: curtain-open 3000ms ease forwards;
+    }
+
+    .overlay-layer {
+      z-index: 3;
+    }
+
+    .canvas-item {
+      position: absolute;
+      user-select: none;
+      transition: opacity 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+    }
+
+    .canvas-item.hidden {
+      opacity: 0.28;
+    }
+
+    .canvas-item.selected {
+      outline: 2px solid rgba(0, 109, 174, 0.8);
+      outline-offset: 4px;
+    }
+
+    .canvas-item[data-type="spotlight"] {
+      border: 2px solid var(--spot-outline);
+      border-radius: 10px;
+      box-shadow: 0 0 0 9999px var(--shade), 0 0 0 6px rgba(0, 109, 174, 0.12);
+      cursor: move;
+    }
+
+    .canvas-item[data-type="spotlight"]::after {
       content: "";
       position: absolute;
       inset: -8px;
-      border: 1px solid rgba(255, 255, 255, 0.72);
-      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      border-radius: 14px;
       pointer-events: none;
     }
-    .spotlight .resize-handle {
+
+    .canvas-item[data-type="callout"],
+    .canvas-item[data-type="note"],
+    .canvas-item[data-type="text-box"],
+    .canvas-item[data-type="intro-card"] {
+      background: rgba(255, 255, 255, 0.97);
+      border: 1px solid #bed0e6;
+      border-radius: 10px;
+      box-shadow: 0 16px 36px rgba(10, 24, 44, 0.14);
+      padding: 14px 16px;
+      color: #16253a;
+      cursor: move;
+    }
+
+    .canvas-item[data-type="note"] {
+      background: rgba(245, 250, 255, 0.98);
+    }
+
+    .canvas-item[data-type="intro-card"] {
+      background: rgba(255, 255, 255, 0.98);
+      box-shadow: 0 20px 48px rgba(8, 24, 44, 0.22);
+    }
+
+    .canvas-item[data-type="media"] {
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 16px 40px rgba(9, 24, 44, 0.14);
+      border: 1px solid var(--border);
+      background: #fff;
+      cursor: move;
+    }
+
+    .canvas-item[data-type="media"] img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      background: #fff;
+    }
+
+    .item-eyebrow {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 6px;
+      color: var(--mono-blue-dark);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .item-title {
+      margin: 0 0 8px;
+      color: var(--mono-navy);
+      font-size: 21px;
+      line-height: 1.18;
+      font-weight: 800;
+    }
+
+    .canvas-item[data-type="callout"] .item-title,
+    .canvas-item[data-type="text-box"] .item-title {
+      font-size: 18px;
+    }
+
+    .item-body {
+      margin: 0;
+      color: #334457;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .editable-field[contenteditable="true"] {
+      cursor: text;
+      user-select: text;
+    }
+
+    .editable-field[contenteditable="true"]:focus {
+      outline: 2px solid rgba(0, 109, 174, 0.4);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+
+    .canvas-item[data-type="text-box"] .item-eyebrow {
+      display: none;
+    }
+
+    .drag-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #f3f7fb;
+      border: 1px solid #bfd0e3;
+      color: #4a5b70;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: none;
+      letter-spacing: 0.01em;
+      cursor: move;
+      user-select: none;
+    }
+
+    .resize-handle {
       position: absolute;
       display: none;
       background: var(--mono-blue);
       border: 2px solid #fff;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.24);
       z-index: 2;
     }
-    .spotlight .resize-right {
+
+    .edit-enabled .canvas-item.selected .resize-handle {
+      display: block;
+    }
+
+    .resize-right {
       top: 50%;
-      right: 5px;
+      right: 6px;
       width: 10px;
-      height: min(48px, 70%);
+      height: min(44px, 70%);
       border-radius: 999px;
       cursor: ew-resize;
       transform: translateY(-50%);
     }
-    .spotlight .resize-bottom {
+
+    .resize-bottom {
       left: 50%;
-      bottom: 5px;
-      width: min(52px, 70%);
+      bottom: 6px;
+      width: min(48px, 70%);
       height: 10px;
       border-radius: 999px;
       cursor: ns-resize;
       transform: translateX(-50%);
     }
-    .spotlight .resize-corner {
+
+    .resize-corner {
       right: 7px;
       bottom: 7px;
-      width: 19px;
-      height: 19px;
+      width: 18px;
+      height: 18px;
       border-radius: 50%;
       cursor: nwse-resize;
     }
 
-    .note-panel, .callout {
-      position: absolute;
-      background: rgba(255, 255, 255, 0.98);
-      border: 1px solid #bfd1e8;
-      border-radius: 8px;
-      box-shadow: 0 14px 36px rgba(7, 29, 55, 0.16);
-      color: #172033;
-      line-height: 1.45;
-      opacity: 0;
-      transform: translateY(8px);
-      transition: opacity 220ms ease, transform 220ms ease;
-    }
-    .note-panel.visible, .callout.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
-    .note-panel { right: 3.2%; top: 20%; width: min(360px, 27%); padding: 18px 20px; }
-    .callout { left: var(--x); top: var(--y); width: min(340px, 28%); padding: 14px 16px; }
-    .note-panel .eyebrow, .callout .eyebrow {
-      display: block;
-      margin-bottom: 6px;
-      color: var(--mono-blue-dark);
-      font-size: 12px;
-      font-weight: 800;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-    }
-    .drag-handle {
-      display: inline-flex;
+    .bottombar {
+      display: flex;
       align-items: center;
-      gap: 4px;
-      margin-left: 8px;
-      padding: 2px 7px;
-      border: 1px solid #b8c9df;
-      border-radius: 999px;
-      background: #f7fafc;
-      color: #44556b;
-      font-size: 10px;
-      font-weight: 700;
-      text-transform: none;
-      letter-spacing: 0.01em;
-      user-select: none;
-      cursor: move;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 16px;
+      flex-wrap: wrap;
     }
-    .note-panel h2, .callout h2 { margin: 0 0 8px; color: var(--mono-navy); font-size: 21px; line-height: 1.2; }
-    .callout h2 { font-size: 18px; }
-    .note-panel p, .callout p { margin: 0; font-size: 14px; color: #344054; }
 
-    .edit-on .spotlight.visible, .edit-on .callout.visible, .edit-on .note-panel.visible { cursor: move; }
-    .edit-on .spotlight.visible .resize-handle { display: block; }
-    .editable-field[contenteditable="true"] { cursor: text; }
-    .editable-field[contenteditable="true"]:focus { outline: 2px solid var(--mono-blue); outline-offset: 3px; border-radius: 4px; }
+    .slide-label {
+      color: var(--mono-navy);
+      font-weight: 800;
+      font-size: 14px;
+      min-width: 220px;
+    }
 
-    .slide-label { min-width: 220px; color: var(--mono-navy); font-weight: 800; font-size: 14px; }
-    .progress { flex: 1; height: 8px; background: #d8e2f0; border-radius: 999px; overflow: hidden; border: 1px solid #c5d3e6; }
-    .progress span { display: block; height: 100%; width: 0%; background: var(--mono-blue); transition: width 220ms ease; }
-    .nav { display: inline-flex; align-items: center; gap: 8px; }
+    .progress {
+      flex: 1;
+      height: 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: #dbe5f0;
+      overflow: hidden;
+      min-width: 160px;
+    }
+
+    .progress span {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: var(--mono-blue);
+      transition: width 180ms ease;
+    }
+
     .save-status {
-      color: #4f5f73;
+      color: var(--muted);
       font-size: 12px;
-      min-width: 120px;
+      min-width: 140px;
       text-align: right;
     }
+
+    .toggle-row label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
     button {
       height: 36px;
-      border: 1px solid #b8c9df;
-      border-radius: 6px;
+      padding: 0 14px;
+      border-radius: 8px;
+      border: 1px solid #b7c9de;
       background: #fff;
       color: var(--mono-navy);
       font: inherit;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 800;
       cursor: pointer;
     }
-    button.primary { min-width: 108px; background: var(--mono-blue); border-color: var(--mono-blue); color: #fff; }
-    button.secondary { min-width: 88px; padding: 0 14px; }
-    button:disabled { opacity: 0.45; cursor: not-allowed; }
-    button:not(:disabled):hover { filter: brightness(0.97); }
-    .hint { color: var(--muted); font-size: 12px; white-space: nowrap; }
-    .edit-note { display: none; color: #526173; font-size: 12px; text-align: right; }
-    .edit-on-ui .edit-note { display: block; }
 
-    @media (max-width: 980px) {
-      body { padding: 8px; }
-      .deck { width: calc(100vw - 16px); }
-      .topbar, .bottombar { flex-wrap: wrap; }
-      .note-panel { width: 40%; right: 2%; }
-      .callout { width: 38%; }
-      .hint { display: none; }
+    button.primary {
+      background: var(--mono-blue);
+      border-color: var(--mono-blue);
+      color: #fff;
+    }
+
+    button.warn {
+      color: #8c2f2f;
+      border-color: #d8b3b3;
+      background: #fff8f8;
+    }
+
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    button:not(:disabled):hover {
+      filter: brightness(0.97);
+    }
+
+    .presenter-nav {
+      display: none;
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(12, 28, 49, 0.84);
+      color: #fff;
+      box-shadow: 0 20px 46px rgba(4, 12, 22, 0.34);
+      z-index: 20;
+      backdrop-filter: blur(10px);
+    }
+
+    .presenter-nav button {
+      background: rgba(255, 255, 255, 0.14);
+      border-color: rgba(255, 255, 255, 0.18);
+      color: #fff;
+    }
+
+    .presenter-step {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.82);
+      min-width: 150px;
+      text-align: center;
+    }
+
+    .present-mode {
+      padding: 0;
+      background: #0b1523;
+      min-height: 100vh;
+    }
+
+    .present-mode .topbar,
+    .present-mode .author-panel,
+    .present-mode .bottombar,
+    .present-mode .toolbar {
+      display: none;
+    }
+
+    .present-mode .shell {
+      display: block;
+      min-height: 100vh;
+    }
+
+    .present-mode .canvas-panel,
+    .present-mode .stage-shell {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0b1523;
+      padding: 0;
+      border: 0;
+      box-shadow: none;
+    }
+
+    .present-mode .stage {
+      width: min(100vw, calc(100vh * 16 / 9));
+      max-height: 100vh;
+      border-radius: 0;
+      border: 0;
+      box-shadow: none;
+    }
+
+    .present-mode .presenter-nav {
+      display: inline-flex;
+    }
+
+    .present-mode .canvas-item.selected,
+    .present-mode .canvas-item .resize-handle,
+    .present-mode .drag-chip {
+      outline: 0;
+    }
+
+    .present-mode .canvas-item .resize-handle,
+    .present-mode .drag-chip {
+      display: none;
+    }
+
+    .present-mode .canvas-item[data-type="spotlight"] {
+      box-shadow: 0 0 0 9999px rgba(9, 18, 33, 0.64), 0 0 0 4px rgba(0, 109, 174, 0.08);
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #f3f7fb;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    @keyframes curtain-open {
+      0% { opacity: 1; transform: scaleX(1); }
+      70% { opacity: 1; transform: scaleX(1); }
+      100% { opacity: 0; transform: scaleX(0); }
+    }
+
+    @media (max-width: 1180px) {
+      .shell {
+        grid-template-columns: 1fr;
+      }
+
+      .slide-list, .item-list {
+        max-height: none;
+      }
+    }
+
+    @media (max-width: 820px) {
+      .workspace {
+        padding: 10px;
+      }
+
+      .topbar, .bottombar {
+        padding: 10px 12px;
+      }
     }
   </style>
 </head>
 <body>
-  <main id="deck" class="deck">
+  <main id="workspace" class="workspace">
     <header class="topbar">
       <div class="title-group">
-        <h1 class="deck-title">Monash password redesign - guided story</h1>
-        <p class="deck-subtitle">Uses the live prototype page underneath. Edit text and move boxes as needed.</p>
+        <h1>Monash password redesign - presentation editor</h1>
+        <p>Create, reorder, annotate and present the live prototype with persistent overlays.</p>
       </div>
-      <label class="mode-row"><input id="editToggle" type="checkbox" /> Edit mode</label>
+      <div class="topbar-actions">
+        <div class="toggle-row">
+          <label><input id="editToggle" type="checkbox" /> Edit mode</label>
+        </div>
+        <button id="presentBtn" class="primary" type="button">Present</button>
+      </div>
     </header>
 
-    <section id="stage" class="stage block-site" aria-label="Presentation stage">
-      <iframe id="siteFrame" class="site-frame" src="./index.html" title="Live Monash password prototype"></iframe>
-      <div id="mediaSlide" class="slide-media" aria-hidden="true">
-        <img id="mediaSlideImage" alt="Legacy Monash password page reference" />
-      </div>
-      <div id="introAnimation" class="slide-intro" aria-hidden="true">
-        <div class="curtain"></div>
-        <div class="intro-card">
-          <h2>Monash password redesign</h2>
-          <p>Opening the renewed page experience</p>
-        </div>
-      </div>
-      <div id="spotlight" class="spotlight" aria-hidden="true">
-        <span class="resize-handle resize-right" data-resize="right" aria-hidden="true"></span>
-        <span class="resize-handle resize-bottom" data-resize="bottom" aria-hidden="true"></span>
-        <span class="resize-handle resize-corner" data-resize="corner" aria-hidden="true"></span>
-      </div>
-      <aside id="introNote" class="note-panel" contenteditable="false"></aside>
-      <aside id="callout" class="callout" contenteditable="false"></aside>
-    </section>
+    <section class="shell">
+      <aside id="authorPanel" class="author-panel">
+        <section class="panel-section">
+          <h2>Slides</h2>
+          <p class="panel-subtext">Build the sequence like a real presentation and keep each step editable.</p>
+          <div class="button-grid">
+            <button id="addSlideBtn" type="button">Add slide</button>
+            <button id="duplicateSlideBtn" type="button">Duplicate</button>
+            <button id="moveSlideUpBtn" type="button">Move up</button>
+            <button id="moveSlideDownBtn" type="button">Move down</button>
+            <button id="deleteSlideBtn" class="warn" type="button">Delete</button>
+            <button id="toggleSlideModeBtn" type="button">Cycle mode</button>
+          </div>
+          <div id="slideList" class="slide-list"></div>
+        </section>
 
-    <footer class="bottombar">
-      <div id="slideLabel" class="slide-label">Step 1 / 7</div>
-      <div class="progress" aria-hidden="true"><span id="progressFill"></span></div>
-      <div class="nav">
-        <button id="saveBtn" class="secondary" type="button">Save</button>
-        <button id="resetBtn" class="secondary" type="button">Reset draft</button>
-        <button id="backBtn" class="secondary" type="button">Back</button>
-        <button id="nextBtn" class="primary" type="button">Next</button>
-      </div>
-      <div class="hint">Keyboard: Left / Right arrows, Space</div>
-      <div id="saveStatus" class="save-status">Not saved</div>
-      <div class="edit-note">Edit mode: drag spotlight/callout; click text to rewrite it.</div>
-    </footer>
+        <section class="panel-section">
+          <h2>Current slide</h2>
+          <p id="currentSlideMeta" class="panel-subtext">Select a slide to edit its overlays and mode.</p>
+        </section>
+
+        <section class="panel-section">
+          <h2>Items</h2>
+          <div class="button-grid single">
+            <button id="addHighlightBtn" type="button">Add highlight</button>
+            <button id="addCalloutBtn" type="button">Add callout</button>
+            <button id="addNoteBtn" type="button">Add note</button>
+            <button id="addTextBtn" type="button">Add text box</button>
+            <button id="addMediaBtn" type="button">Add media</button>
+            <button id="addIntroCardBtn" type="button">Add intro card</button>
+          </div>
+          <div class="button-grid">
+            <button id="bringForwardBtn" type="button">Bring forward</button>
+            <button id="sendBackwardBtn" type="button">Send backward</button>
+            <button id="toggleVisibilityBtn" type="button">Show / hide</button>
+            <button id="deleteItemBtn" class="warn" type="button">Delete selected</button>
+          </div>
+          <div id="itemList" class="item-list"></div>
+        </section>
+      </aside>
+
+      <section class="canvas-panel">
+        <div class="toolbar">
+          <div class="toolbar-group">
+            <span id="modeBadge" class="status-pill">Editing slide</span>
+            <span class="status-pill">16:9 preserved</span>
+            <span class="status-pill">Geometry saved in percentages</span>
+          </div>
+          <div class="toolbar-meta">
+            <span>Keyboard: Left / Right arrows, Space, Esc</span>
+          </div>
+        </div>
+
+        <div class="stage-shell">
+          <section id="stage" class="stage block-site" aria-label="Presentation stage">
+            <iframe id="siteFrame" class="site-frame" src="./index.html" title="Live Monash password prototype"></iframe>
+            <div id="mediaBackdrop" class="media-backdrop" aria-hidden="true">
+              <img id="mediaBackdropImage" alt="Presentation media slide" />
+            </div>
+            <div id="transitionLayer" class="transition-layer" aria-hidden="true">
+              <div class="transition-curtain"></div>
+            </div>
+            <div id="overlayLayer" class="overlay-layer"></div>
+          </section>
+        </div>
+
+        <footer class="bottombar">
+          <div id="slideLabel" class="slide-label">Step 1 / 1</div>
+          <div class="progress" aria-hidden="true"><span id="progressFill"></span></div>
+          <div class="nav">
+            <button id="saveBtn" type="button">Save</button>
+            <button id="resetBtn" type="button">Reset draft</button>
+            <button id="backBtn" type="button">Back</button>
+            <button id="nextBtn" class="primary" type="button">Next</button>
+          </div>
+          <div id="saveStatus" class="save-status">Not saved</div>
+        </footer>
+      </section>
+    </section>
   </main>
 
+  <div id="presenterNav" class="presenter-nav" aria-hidden="true">
+    <button id="presentBackBtn" type="button">Back</button>
+    <div id="presenterStep" class="presenter-step">Step 1 / 1</div>
+    <button id="presentNextBtn" type="button">Next</button>
+    <button id="exitPresentBtn" type="button">Exit</button>
+  </div>
+
   <script>
+    const workspace = document.getElementById('workspace');
     const stage = document.getElementById('stage');
-    const deck = document.getElementById('deck');
-    const frame = document.getElementById('siteFrame');
-    const spotlight = document.getElementById('spotlight');
-    const mediaSlide = document.getElementById('mediaSlide');
-    const mediaSlideImage = document.getElementById('mediaSlideImage');
-    const introAnimation = document.getElementById('introAnimation');
-    const introNote = document.getElementById('introNote');
-    const callout = document.getElementById('callout');
+    const siteFrame = document.getElementById('siteFrame');
+    const mediaBackdrop = document.getElementById('mediaBackdrop');
+    const mediaBackdropImage = document.getElementById('mediaBackdropImage');
+    const transitionLayer = document.getElementById('transitionLayer');
+    const overlayLayer = document.getElementById('overlayLayer');
+    const authorPanel = document.getElementById('authorPanel');
+    const slideList = document.getElementById('slideList');
+    const itemList = document.getElementById('itemList');
+    const currentSlideMeta = document.getElementById('currentSlideMeta');
+    const slideLabel = document.getElementById('slideLabel');
+    const progressFill = document.getElementById('progressFill');
+    const saveStatus = document.getElementById('saveStatus');
+    const modeBadge = document.getElementById('modeBadge');
+    const presenterNav = document.getElementById('presenterNav');
+    const presenterStep = document.getElementById('presenterStep');
     const editToggle = document.getElementById('editToggle');
+    const presentBtn = document.getElementById('presentBtn');
+    const exitPresentBtn = document.getElementById('exitPresentBtn');
+    const presentBackBtn = document.getElementById('presentBackBtn');
+    const presentNextBtn = document.getElementById('presentNextBtn');
     const saveBtn = document.getElementById('saveBtn');
     const resetBtn = document.getElementById('resetBtn');
     const backBtn = document.getElementById('backBtn');
     const nextBtn = document.getElementById('nextBtn');
-    const slideLabel = document.getElementById('slideLabel');
-    const progressFill = document.getElementById('progressFill');
-    const saveStatus = document.getElementById('saveStatus');
+    const addSlideBtn = document.getElementById('addSlideBtn');
+    const duplicateSlideBtn = document.getElementById('duplicateSlideBtn');
+    const moveSlideUpBtn = document.getElementById('moveSlideUpBtn');
+    const moveSlideDownBtn = document.getElementById('moveSlideDownBtn');
+    const deleteSlideBtn = document.getElementById('deleteSlideBtn');
+    const toggleSlideModeBtn = document.getElementById('toggleSlideModeBtn');
+    const addHighlightBtn = document.getElementById('addHighlightBtn');
+    const addCalloutBtn = document.getElementById('addCalloutBtn');
+    const addNoteBtn = document.getElementById('addNoteBtn');
+    const addTextBtn = document.getElementById('addTextBtn');
+    const addMediaBtn = document.getElementById('addMediaBtn');
+    const addIntroCardBtn = document.getElementById('addIntroCardBtn');
+    const bringForwardBtn = document.getElementById('bringForwardBtn');
+    const sendBackwardBtn = document.getElementById('sendBackwardBtn');
+    const toggleVisibilityBtn = document.getElementById('toggleVisibilityBtn');
+    const deleteItemBtn = document.getElementById('deleteItemBtn');
 
-    const STORAGE_KEY = 'monash-presentation-state-v5';
+    const STORAGE_KEY = 'monash-presentation-state-v6';
     const OLD_STORAGE_KEYS = [
       'monash-presentation-state-v1',
       'monash-presentation-state-v2',
       'monash-presentation-state-v3',
-      'monash-presentation-state-v4'
+      'monash-presentation-state-v4',
+      'monash-presentation-state-v5'
     ];
-    const STORAGE_SCHEMA_VERSION = 5;
-    const MIN_SPOT_W = 10;
-    const MIN_SPOT_H = 8;
+    const STORAGE_SCHEMA_VERSION = 6;
+    const MIN_ITEM_W = 8;
+    const MIN_ITEM_H = 6;
+    const MODES = ['live', 'media', 'transition', 'blank'];
+    const POSITIONABLE_TYPES = ['spotlight', 'callout', 'note', 'text-box', 'media', 'intro-card'];
+    const RESIZABLE_ALL_DIRECTIONS = ['spotlight'];
 
-    const defaultSlides = [
-      {
-        id: 'legacy-reference',
-        label: 'Legacy page snapshot',
-        mode: 'media',
-        media: {
-          src: './assets/legacy-password-page.png'
-        }
-      },
-      {
-        id: 'transition-open',
-        label: 'Transition to redesigned page',
-        mode: 'transition',
-        intro: false,
-        dim: false
-      },
-      {
-        id: 'opening-banner',
-        label: 'Opening banner',
-        mode: 'live',
-        intro: true,
-        dim: false
-      },
-      {
-        id: 'banner-context',
-        label: 'Banner context',
-        intro: true,
-        dim: true,
-        spot: { x: 34, y: 27, w: 33, h: 32 },
-        note: {
-          eyebrow: 'Opening moment',
-          title: 'Why pause here?',
-          body: 'This first message gives users a short reason before they make a security decision. Replace this text with your final explanation.'
-        }
-      },
-      {
-        id: 'page-intact',
-        label: 'Page intact',
-        intro: false,
-        dim: false,
-        callout: {
-          x: 63, y: 15,
-          eyebrow: 'Full page',
-          title: 'Show the design first',
-          body: 'The audience sees the redesigned page intact before we start annotating the decisions.'
-        }
-      },
-      {
-        id: 'main-message',
-        label: 'Main message',
-        intro: false,
-        dim: true,
-        spot: { x: 24, y: 20, w: 52, h: 16 },
-        callout: {
-          x: 63, y: 19,
-          eyebrow: 'Message framing',
-          title: 'From password task to passphrase choice',
-          body: 'The page frames the action as creating something easier to remember and harder to guess.'
-        }
-      },
-      {
-        id: 'recommended-path',
-        label: 'Recommended path',
-        intro: false,
-        dim: true,
-        spot: { x: 24, y: 34, w: 52, h: 15 },
-        callout: {
-          x: 62, y: 35,
-          eyebrow: 'Easy',
-          title: 'A simpler valid path',
-          body: 'The recommendation makes the 13+ character route visible without forcing users to parse all rules first.'
-        }
-      },
-      {
-        id: 'short-password-option',
-        label: 'Short password option',
-        intro: false,
-        dim: true,
-        spot: { x: 24, y: 44, w: 52, h: 11 },
-        callout: {
-          x: 62, y: 45,
-          eyebrow: 'Alternative path',
-          title: '8-12 characters can still work',
-          body: 'If users choose a shorter password, they can still meet policy with 3 of 4 character types: upper, lower, number, symbol.'
-        }
-      },
-      {
-        id: 'password-manager-support',
-        label: 'Password manager support',
-        intro: false,
-        dim: true,
-        spot: { x: 24, y: 39, w: 52, h: 10 },
-        callout: {
-          x: 62, y: 39,
-          eyebrow: 'Enablement',
-          title: 'Academic staff support',
-          body: 'The password manager prompt appears before typing starts, as optional support for staff who want help creating or saving a strong password.'
-        }
-      },
-      {
-        id: 'live-checks',
-        label: 'Live checks',
-        intro: false,
-        dim: true,
-        spot: { x: 24, y: 48, w: 35, h: 18 },
-        callout: {
-          x: 61, y: 48,
-          eyebrow: 'Timely',
-          title: 'Feedback appears when useful',
-          body: 'Checks and strength feedback guide the user during the decision, instead of after a failed submission.'
-        }
-      },
-      {
-        id: 'expiry-lifetime',
-        label: 'Password lifetime',
-        intro: false,
-        dim: true,
-        spot: { x: 24, y: 47, w: 35, h: 14 },
-        callout: {
-          x: 61, y: 46,
-          eyebrow: 'Incentive',
-          title: 'Strength changes how long it lasts',
-          body: 'The prototype links stronger passphrases to longer expiry windows, from 2 weeks for weak choices up to 6 months for very strong ones.'
-        }
-      },
-      {
-        id: 'submit-readiness',
-        label: 'Submit readiness',
-        intro: false,
-        dim: true,
-        spot: { x: 24, y: 74, w: 52, h: 12 },
-        callout: {
-          x: 62, y: 72,
-          eyebrow: 'Closure',
-          title: 'Clear next action',
-          body: 'The final button can communicate readiness and reduce trial-and-error at the end of the form.'
+    const defaultSlides = {
+      slideOrder: [
+        'legacy-reference',
+        'transition-open',
+        'opening-banner',
+        'banner-context',
+        'page-intact',
+        'main-message',
+        'recommended-path',
+        'short-password-option',
+        'password-manager-support',
+        'live-checks',
+        'expiry-lifetime',
+        'submit-readiness'
+      ],
+      slidesById: {
+        'legacy-reference': {
+          id: 'legacy-reference',
+          label: 'Legacy page snapshot',
+          mode: 'media',
+          intro: false,
+          items: [
+            {
+              id: 'media-legacy',
+              type: 'media',
+              x: 6,
+              y: 6,
+              w: 88,
+              h: 88,
+              z: 1,
+              visible: true,
+              src: './assets/legacy-password-page.png'
+            }
+          ]
+        },
+        'transition-open': {
+          id: 'transition-open',
+          label: 'Transition to redesigned page',
+          mode: 'transition',
+          intro: false,
+          items: [
+            {
+              id: 'intro-opening-card',
+              type: 'intro-card',
+              x: 31,
+              y: 37,
+              w: 38,
+              h: 18,
+              z: 2,
+              visible: true,
+              eyebrow: 'Opening',
+              title: 'Monash password redesign',
+              body: 'Opening the renewed page experience'
+            }
+          ]
+        },
+        'opening-banner': {
+          id: 'opening-banner',
+          label: 'Opening banner',
+          mode: 'live',
+          intro: true,
+          items: []
+        },
+        'banner-context': {
+          id: 'banner-context',
+          label: 'Banner context',
+          mode: 'live',
+          intro: true,
+          items: [
+            {
+              id: 'spot-banner-context',
+              type: 'spotlight',
+              x: 31.98,
+              y: 36.49,
+              w: 34.54,
+              h: 27.22,
+              z: 1,
+              visible: true
+            },
+            {
+              id: 'note-banner-context',
+              type: 'note',
+              x: 70.95,
+              y: 40.82,
+              w: 24,
+              h: 23,
+              z: 2,
+              visible: true,
+              eyebrow: 'Opening moment',
+              title: 'Why pause here?',
+              body: 'This first message gives users a short reason before they make a security decision. Replace this text with your final explanation.'
+            }
+          ]
+        },
+        'page-intact': {
+          id: 'page-intact',
+          label: 'Page intact',
+          mode: 'live',
+          intro: false,
+          items: [
+            {
+              id: 'callout-page-intact',
+              type: 'callout',
+              x: 75.54,
+              y: 5.93,
+              w: 22,
+              h: 18,
+              z: 2,
+              visible: true,
+              eyebrow: 'Full page',
+              title: 'Show the design first',
+              body: 'The audience sees the redesigned page intact before we start annotating the decisions.'
+            }
+          ]
+        },
+        'main-message': {
+          id: 'main-message',
+          label: 'Main message',
+          mode: 'live',
+          intro: false,
+          items: [
+            {
+              id: 'spot-main-message',
+              type: 'spotlight',
+              x: 32.88,
+              y: 17.35,
+              w: 34.23,
+              h: 8,
+              z: 1,
+              visible: true
+            },
+            {
+              id: 'callout-main-message',
+              type: 'callout',
+              x: 76.4,
+              y: 13.08,
+              w: 21,
+              h: 18,
+              z: 2,
+              visible: true,
+              eyebrow: 'Message framing',
+              title: 'From password task to passphrase choice',
+              body: 'The page frames the action as creating something easier to remember and harder to guess.'
+            }
+          ]
+        },
+        'recommended-path': {
+          id: 'recommended-path',
+          label: 'Recommended path',
+          mode: 'live',
+          intro: false,
+          items: [
+            {
+              id: 'spot-recommended-path',
+              type: 'spotlight',
+              x: 26.22,
+              y: 28.2,
+              w: 46.2,
+              h: 8,
+              z: 1,
+              visible: true
+            },
+            {
+              id: 'callout-recommended-path',
+              type: 'callout',
+              x: 76.18,
+              y: 24.36,
+              w: 21,
+              h: 18,
+              z: 2,
+              visible: true,
+              eyebrow: 'Easy',
+              title: 'A simpler valid path',
+              body: 'The recommendation makes the 13+ character route visible without forcing users to parse all rules first.'
+            }
+          ]
+        },
+        'short-password-option': {
+          id: 'short-password-option',
+          label: 'Short password option',
+          mode: 'live',
+          intro: false,
+          items: [
+            {
+              id: 'spot-short-password-option',
+              type: 'spotlight',
+              x: 26.83,
+              y: 35.84,
+              w: 44.9,
+              h: 8.5,
+              z: 1,
+              visible: true
+            },
+            {
+              id: 'callout-short-password-option',
+              type: 'callout',
+              x: 76.13,
+              y: 32.54,
+              w: 21,
+              h: 18,
+              z: 2,
+              visible: true,
+              eyebrow: 'Alternative path',
+              title: '8-12 characters can still work',
+              body: 'If users choose a shorter password, they can still meet policy with 3 of 4 character types: upper, lower, number, symbol.'
+            }
+          ]
+        },
+        'password-manager-support': {
+          id: 'password-manager-support',
+          label: 'Password manager support',
+          mode: 'live',
+          intro: false,
+          items: [
+            {
+              id: 'spot-password-manager-support',
+              type: 'spotlight',
+              x: 26.89,
+              y: 46.83,
+              w: 44.73,
+              h: 9.94,
+              z: 1,
+              visible: true
+            },
+            {
+              id: 'callout-password-manager-support',
+              type: 'callout',
+              x: 76.47,
+              y: 44.51,
+              w: 21,
+              h: 19,
+              z: 2,
+              visible: true,
+              eyebrow: 'Enablement',
+              title: 'Academic staff support',
+              body: 'The password manager prompt appears before typing starts, as optional support for staff who want help creating or saving a strong password.'
+            }
+          ]
+        },
+        'live-checks': {
+          id: 'live-checks',
+          label: 'Live checks',
+          mode: 'live',
+          intro: false,
+          items: [
+            {
+              id: 'spot-live-checks',
+              type: 'spotlight',
+              x: 28.1,
+              y: 80.27,
+              w: 12.04,
+              h: 8,
+              z: 1,
+              visible: true
+            },
+            {
+              id: 'callout-live-checks',
+              type: 'callout',
+              x: 1.29,
+              y: 76.26,
+              w: 23,
+              h: 17,
+              z: 2,
+              visible: true,
+              eyebrow: 'Timely',
+              title: 'Feedback appears when useful',
+              body: 'Checks and strength feedback guide the user during the decision, instead of after a failed submission.'
+            }
+          ]
+        },
+        'expiry-lifetime': {
+          id: 'expiry-lifetime',
+          label: 'Password lifetime',
+          mode: 'live',
+          intro: false,
+          items: [
+            {
+              id: 'spot-expiry-lifetime',
+              type: 'spotlight',
+              x: 27.57,
+              y: 72.08,
+              w: 23.34,
+              h: 11.55,
+              z: 1,
+              visible: true
+            },
+            {
+              id: 'callout-expiry-lifetime',
+              type: 'callout',
+              x: 60.91,
+              y: 46.05,
+              w: 25,
+              h: 20,
+              z: 2,
+              visible: true,
+              eyebrow: 'Incentive',
+              title: 'Strength changes how long it lasts',
+              body: 'The prototype links stronger passphrases to longer expiry windows, from 2 weeks for weak choices up to 6 months for very strong ones.'
+            }
+          ]
+        },
+        'submit-readiness': {
+          id: 'submit-readiness',
+          label: 'Submit readiness',
+          mode: 'live',
+          intro: false,
+          items: [
+            {
+              id: 'spot-submit-readiness',
+              type: 'spotlight',
+              x: 27.23,
+              y: 86.84,
+              w: 44.33,
+              h: 10.88,
+              z: 1,
+              visible: true
+            },
+            {
+              id: 'callout-submit-readiness',
+              type: 'callout',
+              x: 76.17,
+              y: 82.92,
+              w: 21,
+              h: 15,
+              z: 2,
+              visible: true,
+              eyebrow: 'Closure',
+              title: 'Clear next action',
+              body: 'The final button can communicate readiness and reduce trial-and-error at the end of the form.'
+            }
+          ]
         }
       }
-    ];
+    };
 
     const HARDCODED_PRESENTATION_STATE = /* PRESENTATION_STATE_START */ {
-  "schemaVersion": 5,
-  "savedAt": 1779499609751,
-  "currentSlideId": "submit-readiness",
+  "schemaVersion": 6,
+  "savedAt": 1779500287718,
+  "currentSlideId": "expiry-lifetime",
+  "slideOrder": [
+    "legacy-reference",
+    "transition-open",
+    "opening-banner",
+    "banner-context",
+    "page-intact",
+    "main-message",
+    "recommended-path",
+    "short-password-option",
+    "password-manager-support",
+    "live-checks",
+    "expiry-lifetime",
+    "submit-readiness"
+  ],
   "slidesById": {
+    "legacy-reference": {
+      "id": "legacy-reference",
+      "label": "Legacy page snapshot",
+      "mode": "media",
+      "intro": false,
+      "items": [
+        {
+          "id": "media-legacy",
+          "type": "media",
+          "x": 6,
+          "y": 6,
+          "w": 88,
+          "h": 88,
+          "z": 1,
+          "visible": true,
+          "src": "./assets/legacy-password-page.png"
+        }
+      ]
+    },
+    "transition-open": {
+      "id": "transition-open",
+      "label": "Transition to redesigned page",
+      "mode": "transition",
+      "intro": false,
+      "items": [
+        {
+          "id": "intro-opening-card",
+          "type": "intro-card",
+          "x": 31,
+          "y": 37,
+          "w": 38,
+          "h": 18,
+          "z": 2,
+          "visible": true,
+          "eyebrow": "Opening",
+          "title": "Monash password redesign",
+          "body": "Opening the renewed page experience"
+        }
+      ]
+    },
     "opening-banner": {
       "id": "opening-banner",
-      "note": null,
-      "callout": null,
-      "spot": null
+      "label": "Opening banner",
+      "mode": "live",
+      "intro": true,
+      "items": []
     },
     "banner-context": {
       "id": "banner-context",
-      "note": {
-        "eyebrow": "Opening moment",
-        "title": "Why pause here?",
-        "body": "This first message gives users a short reason before they make a security decision. Replace this text with your final explanation.",
-        "x": 71.06999772948664,
-        "y": 40.73230120183857
-      },
-      "callout": null,
-      "spot": {
-        "x": 31.88240205664565,
-        "y": 36.3598484355265,
-        "w": 34.7403191902324,
-        "h": 27.49384757614031
-      }
+      "label": "Banner context",
+      "mode": "live",
+      "intro": true,
+      "items": [
+        {
+          "id": "spot-banner-context",
+          "type": "spotlight",
+          "x": 31.98,
+          "y": 36.49,
+          "w": 34.54,
+          "h": 27.22,
+          "z": 1,
+          "visible": true
+        },
+        {
+          "id": "note-banner-context",
+          "type": "note",
+          "x": 70.95,
+          "y": 40.82,
+          "w": 24,
+          "h": 23,
+          "z": 2,
+          "visible": true,
+          "eyebrow": "Opening moment",
+          "title": "Why pause here?",
+          "body": "This first message gives users a short reason before they make a security decision. Replace this text with your final explanation."
+        }
+      ]
     },
     "page-intact": {
       "id": "page-intact",
-      "note": null,
-      "callout": {
-        "x": 75.66082925007142,
-        "y": 5.565176629904036,
-        "eyebrow": "Full page",
-        "title": "Show the design first",
-        "body": "The audience sees the redesigned page intact before we start annotating the decisions."
-      },
-      "spot": null
+      "label": "Page intact",
+      "mode": "live",
+      "intro": false,
+      "items": [
+        {
+          "id": "callout-page-intact",
+          "type": "callout",
+          "x": 75.54,
+          "y": 5.93,
+          "w": 22,
+          "h": 18,
+          "z": 2,
+          "visible": true,
+          "eyebrow": "Full page",
+          "title": "Show the design first",
+          "body": "The audience sees the redesigned page intact before we start annotating the decisions."
+        }
+      ]
     },
     "main-message": {
       "id": "main-message",
-      "note": null,
-      "callout": {
-        "x": 76.49725707338153,
-        "y": 12.833500436203597,
-        "eyebrow": "Message framing",
-        "title": "From password task to passphrase choice",
-        "body": "The page frames the action as creating something easier to remember and harder to guess."
-      },
-      "spot": {
-        "x": 32.818439498143306,
-        "y": 17.134337686688628,
-        "w": 34.36092373272396,
-        "h": 8
-      }
+      "label": "Main message",
+      "mode": "live",
+      "intro": false,
+      "items": [
+        {
+          "id": "spot-main-message",
+          "type": "spotlight",
+          "x": 32.88,
+          "y": 17.35,
+          "w": 34.23,
+          "h": 8,
+          "z": 1,
+          "visible": true
+        },
+        {
+          "id": "callout-main-message",
+          "type": "callout",
+          "x": 76.4,
+          "y": 13.08,
+          "w": 21,
+          "h": 18,
+          "z": 2,
+          "visible": true,
+          "eyebrow": "Message framing",
+          "title": "From password task to passphrase choice",
+          "body": "The page frames the action as creating something easier to remember and harder to guess."
+        }
+      ]
     },
     "recommended-path": {
       "id": "recommended-path",
-      "note": null,
-      "callout": {
-        "x": 76.27679755077527,
-        "y": 24.19302334665816,
-        "eyebrow": "Easy",
-        "title": "A simpler valid path",
-        "body": "The recommendation makes the 13+ character route visible without forcing users to parse all rules first."
-      },
-      "spot": {
-        "x": 26.12921418265181,
-        "y": 28.056354900454433,
-        "w": 46.377066350259646,
-        "h": 8
-      }
+      "label": "Recommended path",
+      "mode": "live",
+      "intro": false,
+      "items": [
+        {
+          "id": "spot-recommended-path",
+          "type": "spotlight",
+          "x": 26.22,
+          "y": 28.2,
+          "w": 46.2,
+          "h": 8,
+          "z": 1,
+          "visible": true
+        },
+        {
+          "id": "callout-recommended-path",
+          "type": "callout",
+          "x": 76.18,
+          "y": 24.36,
+          "w": 21,
+          "h": 18,
+          "z": 2,
+          "visible": true,
+          "eyebrow": "Easy",
+          "title": "A simpler valid path",
+          "body": "The recommendation makes the 13+ character route visible without forcing users to parse all rules first."
+        }
+      ]
     },
     "short-password-option": {
       "id": "short-password-option",
-      "note": null,
-      "callout": {
-        "x": 76.2335845546498,
-        "y": 32.4249013659032,
-        "eyebrow": "Alternative path",
-        "title": "8-12 characters can still work",
-        "body": "If users choose a shorter password, they can still meet policy with 3 of 4 character types: upper, lower, number, symbol."
-      },
-      "spot": {
-        "x": 26.740055517713667,
-        "y": 35.741350798838525,
-        "w": 45.06895768788498,
-        "h": 8.560007291761613
-      }
+      "label": "Short password option",
+      "mode": "live",
+      "intro": false,
+      "items": [
+        {
+          "id": "spot-short-password-option",
+          "type": "spotlight",
+          "x": 26.83,
+          "y": 35.84,
+          "w": 44.9,
+          "h": 8.5,
+          "z": 1,
+          "visible": true
+        },
+        {
+          "id": "callout-short-password-option",
+          "type": "callout",
+          "x": 76.13,
+          "y": 32.54,
+          "w": 21,
+          "h": 18,
+          "z": 2,
+          "visible": true,
+          "eyebrow": "Alternative path",
+          "title": "8-12 characters can still work",
+          "body": "If users choose a shorter password, they can still meet policy with 3 of 4 character types: upper, lower, number, symbol."
+        }
+      ]
     },
     "password-manager-support": {
       "id": "password-manager-support",
-      "note": null,
-      "callout": {
-        "x": 76.56756974504331,
-        "y": 44.478443729736064,
-        "eyebrow": "Enablement",
-        "title": "Academic staff support",
-        "body": "The password manager prompt appears before typing starts, as optional support for staff who want help creating or saving a strong password."
-      },
-      "spot": {
-        "x": 26.804508800070316,
-        "y": 46.80659904425839,
-        "w": 44.90269751635136,
-        "h": 10.002734410604305
-      }
+      "label": "Password manager support",
+      "mode": "live",
+      "intro": false,
+      "items": [
+        {
+          "id": "spot-password-manager-support",
+          "type": "spotlight",
+          "x": 26.89,
+          "y": 46.83,
+          "w": 44.73,
+          "h": 9.94,
+          "z": 1,
+          "visible": true
+        },
+        {
+          "id": "callout-password-manager-support",
+          "type": "callout",
+          "x": 76.47,
+          "y": 44.51,
+          "w": 21,
+          "h": 19,
+          "z": 2,
+          "visible": true,
+          "eyebrow": "Enablement",
+          "title": "Academic staff support",
+          "body": "The password manager prompt appears before typing starts, as optional support for staff who want help creating or saving a strong password."
+        }
+      ]
     },
     "live-checks": {
       "id": "live-checks",
-      "note": null,
-      "callout": {
-        "x": 1.1132839679784374,
-        "y": 76.43589109233193,
-        "eyebrow": "Timely",
-        "title": "Feedback appears when useful",
-        "body": "Checks and strength feedback guide the user during the decision, instead of after a failed submission."
-      },
-      "spot": {
-        "x": 28.016669962573147,
-        "y": 80.47240198440085,
-        "w": 12.08352559454491,
-        "h": 8
-      }
+      "label": "Live checks",
+      "mode": "live",
+      "intro": false,
+      "items": [
+        {
+          "id": "spot-live-checks",
+          "type": "spotlight",
+          "x": 28.1,
+          "y": 80.27,
+          "w": 12.04,
+          "h": 8,
+          "z": 1,
+          "visible": true
+        },
+        {
+          "id": "callout-live-checks",
+          "type": "callout",
+          "x": 1.29,
+          "y": 76.26,
+          "w": 23,
+          "h": 17,
+          "z": 2,
+          "visible": true,
+          "eyebrow": "Timely",
+          "title": "Feedback appears when useful",
+          "body": "Checks and strength feedback guide the user during the decision, instead of after a failed submission."
+        }
+      ]
     },
     "expiry-lifetime": {
       "id": "expiry-lifetime",
-      "note": null,
-      "callout": {
-        "x": 60.95669178879831,
-        "y": 46.02533887159989,
-        "eyebrow": "Incentive",
-        "title": "Strength changes how long it lasts",
-        "body": "The prototype links stronger passphrases to longer expiry windows, from 2 weeks for weak choices up to 6 months for very strong ones."
-      },
-      "spot": {
-        "x": 27.484930383130816,
-        "y": 72.22880506256591,
-        "w": 23.45513538851413,
-        "h": 10.472792614487169
-      }
+      "label": "Password lifetime",
+      "mode": "live",
+      "intro": false,
+      "items": [
+        {
+          "id": "spot-expiry-lifetime",
+          "type": "spotlight",
+          "x": 27.57,
+          "y": 72.08,
+          "w": 23.34,
+          "h": 11.55,
+          "z": 1,
+          "visible": true
+        },
+        {
+          "id": "callout-expiry-lifetime",
+          "type": "callout",
+          "x": 60.91,
+          "y": 46.05,
+          "w": 25,
+          "h": 20,
+          "z": 2,
+          "visible": true,
+          "eyebrow": "Incentive",
+          "title": "Strength changes how long it lasts",
+          "body": "The prototype links stronger passphrases to longer expiry windows, from 2 weeks for weak choices up to 6 months for very strong ones."
+        }
+      ]
     },
     "submit-readiness": {
       "id": "submit-readiness",
-      "note": null,
-      "callout": {
-        "x": 76.24603575692323,
-        "y": 83.09092566309457,
-        "eyebrow": "Closure",
-        "title": "Clear next action",
-        "body": "The final button can communicate readiness and reduce trial-and-error at the end of the form."
-      },
-      "spot": {
-        "x": 27.22711725370423,
-        "y": 86.8396723915676,
-        "w": 44.32847736444669,
-        "h": 10.881652104845115
-      }
+      "label": "Submit readiness",
+      "mode": "live",
+      "intro": false,
+      "items": [
+        {
+          "id": "spot-submit-readiness",
+          "type": "spotlight",
+          "x": 27.23,
+          "y": 86.84,
+          "w": 44.33,
+          "h": 10.88,
+          "z": 1,
+          "visible": true
+        },
+        {
+          "id": "callout-submit-readiness",
+          "type": "callout",
+          "x": 76.17,
+          "y": 82.92,
+          "w": 21,
+          "h": 15,
+          "z": 2,
+          "visible": true,
+          "eyebrow": "Closure",
+          "title": "Clear next action",
+          "body": "The final button can communicate readiness and reduce trial-and-error at the end of the form."
+        }
+      ]
     }
   }
 } /* PRESENTATION_STATE_END */;
 
-    let workingSlides = deepClone(defaultSlides);
-    let currentSlideId = workingSlides[0].id;
+    let presentationState = deepClone(defaultSlides);
+    let currentSlideId = defaultSlides.slideOrder[0];
+    let selectedItemId = null;
     let frameLoaded = false;
-    let renderedSlideId = null;
-    let drag = null;
+    let isPresenting = false;
     let autosaveTimer = null;
-    let introAnimationTimer = null;
+    let transitionTimer = null;
+    let drag = null;
+    let renderToken = 0;
 
     function deepClone(value) {
       if (typeof structuredClone === 'function') return structuredClone(value);
@@ -677,184 +1511,224 @@
       return typeof value === 'number' && Number.isFinite(value);
     }
 
-    function currentIndex() {
-      const index = workingSlides.findIndex((slide) => slide.id === currentSlideId);
-      if (index >= 0) return index;
-      currentSlideId = workingSlides[0].id;
-      return 0;
-    }
-
-    function currentSlide() {
-      return workingSlides[currentIndex()];
+    function normalizeText(value, fallback = '') {
+      return typeof value === 'string' ? value : fallback;
     }
 
     function setSaveStatus(text) {
       saveStatus.textContent = text;
     }
 
-    function setEditable(on) {
-      deck.classList.toggle('edit-on-ui', on);
-      stage.classList.toggle('edit-on', on);
-      stage.classList.toggle('block-site', !on);
-      for (const field of stage.querySelectorAll('.editable-field')) {
-        field.setAttribute('contenteditable', on ? 'true' : 'false');
+    function orderedSlides() {
+      return presentationState.slideOrder
+        .map((id) => presentationState.slidesById[id])
+        .filter(Boolean);
+    }
+
+    function currentSlide() {
+      return presentationState.slidesById[currentSlideId] || orderedSlides()[0];
+    }
+
+    function currentIndex() {
+      const index = presentationState.slideOrder.indexOf(currentSlideId);
+      return index >= 0 ? index : 0;
+    }
+
+    function nextId(prefix) {
+      return `${prefix}-${Math.random().toString(36).slice(2, 9)}`;
+    }
+
+    function buildItem(type, overrides = {}) {
+      const base = {
+        id: nextId(type),
+        type,
+        x: 22,
+        y: 20,
+        w: 24,
+        h: 18,
+        z: 1,
+        visible: true
+      };
+
+      if (type === 'spotlight') Object.assign(base, { w: 30, h: 16 });
+      if (type === 'callout') Object.assign(base, {
+        x: 68, y: 18, w: 24, h: 18,
+        eyebrow: 'Callout',
+        title: 'New callout',
+        body: 'Explain the point you want to highlight on this step.'
+      });
+      if (type === 'note') Object.assign(base, {
+        x: 68, y: 18, w: 24, h: 22,
+        eyebrow: 'Note',
+        title: 'Presenter note',
+        body: 'Use this space for context or explanation.'
+      });
+      if (type === 'text-box') Object.assign(base, {
+        x: 62, y: 18, w: 24, h: 16,
+        title: 'Editable text',
+        body: 'Write directly inside this box.'
+      });
+      if (type === 'media') Object.assign(base, {
+        x: 10, y: 10, w: 80, h: 80,
+        src: './assets/legacy-password-page.png'
+      });
+      if (type === 'intro-card') Object.assign(base, {
+        x: 31, y: 37, w: 38, h: 18,
+        eyebrow: 'Opening',
+        title: 'Transition title',
+        body: 'Replace this with your opening message.'
+      });
+
+      return Object.assign(base, overrides);
+    }
+
+    function normalizeItem(raw, index = 0) {
+      if (!raw || typeof raw !== 'object' || !raw.type) return null;
+      const item = buildItem(raw.type, raw);
+      item.id = normalizeText(raw.id, nextId(raw.type));
+      item.x = clamp(isFiniteNumber(raw.x) ? raw.x : item.x, 0, 100 - MIN_ITEM_W);
+      item.y = clamp(isFiniteNumber(raw.y) ? raw.y : item.y, 0, 100 - MIN_ITEM_H);
+      item.w = clamp(isFiniteNumber(raw.w) ? raw.w : item.w, MIN_ITEM_W, 100 - item.x);
+      item.h = clamp(isFiniteNumber(raw.h) ? raw.h : item.h, MIN_ITEM_H, 100 - item.y);
+      item.z = isFiniteNumber(raw.z) ? raw.z : index + 1;
+      item.visible = raw.visible !== false;
+      item.eyebrow = normalizeText(raw.eyebrow, item.eyebrow || '');
+      item.title = normalizeText(raw.title, item.title || '');
+      item.body = normalizeText(raw.body, item.body || '');
+      item.src = normalizeText(raw.src, item.src || '');
+      return item;
+    }
+
+    function normalizeSlide(raw, fallbackId) {
+      const id = normalizeText(raw && raw.id, fallbackId || nextId('slide'));
+      const slide = {
+        id,
+        label: normalizeText(raw && raw.label, 'Untitled slide'),
+        mode: MODES.includes(raw && raw.mode) ? raw.mode : 'live',
+        intro: Boolean(raw && raw.intro),
+        items: []
+      };
+      if (Array.isArray(raw && raw.items)) {
+        slide.items = raw.items.map(normalizeItem).filter(Boolean);
       }
+      sortItems(slide);
+      return slide;
     }
 
-    function setIframeIntro(visible) {
-      if (!frameLoaded) return;
-      try {
-        const doc = frame.contentDocument;
-        const overlay = doc && doc.getElementById('introOverlay');
-        if (overlay) overlay.classList.toggle('dismissed', !visible);
-      } catch (error) {}
+    function deepCloneSlides(slides) {
+      return deepClone(slides);
     }
 
-    function makeEditable(tagName, fieldName, text, className = '') {
-      const el = document.createElement(tagName);
-      el.className = className ? `${className} editable-field` : 'editable-field';
-      el.dataset.field = fieldName;
-      el.textContent = text || '';
-      el.setAttribute('contenteditable', editToggle.checked ? 'true' : 'false');
-      return el;
+    function sortItems(slide) {
+      slide.items.sort((a, b) => (a.z || 0) - (b.z || 0));
     }
 
-    function makeDragHandle() {
-      const handle = document.createElement('span');
-      handle.className = 'drag-handle';
-      handle.textContent = 'Move';
-      handle.setAttribute('contenteditable', 'false');
-      return handle;
+    function ensureSequentialZ(slide) {
+      sortItems(slide);
+      slide.items.forEach((item, index) => {
+        item.z = index + 1;
+      });
     }
 
-    function setPanelContent(panel, data) {
-      panel.replaceChildren();
-      if (!data) {
-        panel.classList.remove('visible');
-        return;
+    function itemById(slide, itemId) {
+      return slide.items.find((item) => item.id === itemId) || null;
+    }
+
+    function migrateLegacyState(raw) {
+      if (!raw || typeof raw !== 'object' || raw.schemaVersion !== 5 || !raw.slidesById) return null;
+      const base = deepClone(defaultSlides);
+      for (const slideId of base.slideOrder) {
+        const saved = raw.slidesById[slideId];
+        const slide = base.slidesById[slideId];
+        if (!saved || !slide) continue;
+        slide.items = [];
+        if (saved.spot) {
+          slide.items.push(normalizeItem({
+            id: `spot-${slideId}`,
+            type: 'spotlight',
+            x: saved.spot.x,
+            y: saved.spot.y,
+            w: saved.spot.w,
+            h: saved.spot.h,
+            z: 1,
+            visible: true
+          }, 0));
+        }
+        if (saved.note) {
+          slide.items.push(normalizeItem({
+            id: `note-${slideId}`,
+            type: 'note',
+            x: saved.note.x,
+            y: saved.note.y,
+            w: 24,
+            h: 22,
+            z: 2,
+            visible: true,
+            eyebrow: saved.note.eyebrow,
+            title: saved.note.title,
+            body: saved.note.body
+          }, 1));
+        }
+        if (saved.callout) {
+          slide.items.push(normalizeItem({
+            id: `callout-${slideId}`,
+            type: 'callout',
+            x: saved.callout.x,
+            y: saved.callout.y,
+            w: 24,
+            h: 18,
+            z: 2,
+            visible: true,
+            eyebrow: saved.callout.eyebrow,
+            title: saved.callout.title,
+            body: saved.callout.body
+          }, 2));
+        }
+        ensureSequentialZ(slide);
       }
-
-      const eyebrowWrap = document.createElement('span');
-      eyebrowWrap.className = 'eyebrow';
-      eyebrowWrap.append(makeEditable('span', 'eyebrow', data.eyebrow || ''), makeDragHandle());
-      const title = makeEditable('h2', 'title', data.title || '');
-      const body = makeEditable('p', 'body', data.body || '');
-      panel.append(eyebrowWrap, title, body);
-
-      if (isFiniteNumber(data.x) && isFiniteNumber(data.y)) {
-        panel.style.left = `${data.x}%`;
-        panel.style.top = `${data.y}%`;
-        panel.style.right = 'auto';
-      } else {
-        panel.style.left = '';
-        panel.style.top = '';
-        panel.style.right = '';
-      }
-      panel.classList.add('visible');
-    }
-
-    function setSpotlight(data) {
-      if (!data) {
-        spotlight.classList.remove('visible');
-        return;
-      }
-      spotlight.style.left = '';
-      spotlight.style.top = '';
-      spotlight.style.right = '';
-      spotlight.style.bottom = '';
-      spotlight.style.setProperty('--x', `${data.x}%`);
-      spotlight.style.setProperty('--y', `${data.y}%`);
-      spotlight.style.setProperty('--w', `${data.w}%`);
-      spotlight.style.setProperty('--h', `${data.h}%`);
-      spotlight.classList.add('visible');
-    }
-
-    function textDataFromPanel(panel) {
       return {
-        eyebrow: panel.querySelector('[data-field="eyebrow"]')?.textContent?.trim() || '',
-        title: panel.querySelector('[data-field="title"]')?.textContent?.trim() || '',
-        body: panel.querySelector('[data-field="body"]')?.textContent?.trim() || ''
+        schemaVersion: STORAGE_SCHEMA_VERSION,
+        savedAt: isFiniteNumber(raw.savedAt) ? raw.savedAt : Date.now(),
+        currentSlideId: normalizeText(raw.currentSlideId, base.slideOrder[0]),
+        slideOrder: base.slideOrder,
+        slidesById: base.slidesById
       };
     }
 
-    function percentPosition(el) {
-      const rect = el.getBoundingClientRect();
-      const stageRect = stage.getBoundingClientRect();
-      return {
-        x: ((rect.left - stageRect.left) / stageRect.width) * 100,
-        y: ((rect.top - stageRect.top) / stageRect.height) * 100,
-        w: (rect.width / stageRect.width) * 100,
-        h: (rect.height / stageRect.height) * 100
-      };
-    }
+    function normalizeState(raw) {
+      if (!raw || typeof raw !== 'object') return null;
+      if (raw.schemaVersion === 5) return migrateLegacyState(raw);
+      if (raw.schemaVersion !== STORAGE_SCHEMA_VERSION) return null;
+      if (!Array.isArray(raw.slideOrder) || !raw.slidesById || typeof raw.slidesById !== 'object') return null;
 
-    function commitActiveSlideFromDom() {
-      const slide = currentSlide();
-      if (slide.note && introNote.classList.contains('visible')) {
-        Object.assign(slide.note, textDataFromPanel(introNote));
-        const pos = percentPosition(introNote);
-        slide.note.x = clamp(pos.x, 0, 96);
-        slide.note.y = clamp(pos.y, 0, 96);
-      }
-      if (slide.callout && callout.classList.contains('visible')) {
-        Object.assign(slide.callout, textDataFromPanel(callout));
-        const pos = percentPosition(callout);
-        slide.callout.x = clamp(pos.x, 0, 96);
-        slide.callout.y = clamp(pos.y, 0, 96);
-      }
-      if (slide.spot && spotlight.classList.contains('visible')) {
-        const pos = percentPosition(spotlight);
-        slide.spot.x = clamp(pos.x, 0, 100 - MIN_SPOT_W);
-        slide.spot.y = clamp(pos.y, 0, 100 - MIN_SPOT_H);
-        slide.spot.w = clamp(pos.w, MIN_SPOT_W, 100 - slide.spot.x);
-        slide.spot.h = clamp(pos.h, MIN_SPOT_H, 100 - slide.spot.y);
-      }
-    }
-
-    function mergeSavedPanel(defaultPanel, savedPanel) {
-      if (!defaultPanel || !savedPanel || typeof savedPanel !== 'object') {
-        return defaultPanel ? deepClone(defaultPanel) : null;
-      }
-      const next = deepClone(defaultPanel);
-      if (typeof savedPanel.eyebrow === 'string') next.eyebrow = savedPanel.eyebrow;
-      if (typeof savedPanel.title === 'string') next.title = savedPanel.title;
-      if (typeof savedPanel.body === 'string') next.body = savedPanel.body;
-      if (isFiniteNumber(savedPanel.x)) next.x = clamp(savedPanel.x, 0, 96);
-      if (isFiniteNumber(savedPanel.y)) next.y = clamp(savedPanel.y, 0, 96);
-      return next;
-    }
-
-    function mergeSavedSpot(defaultSpot, savedSpot) {
-      if (!defaultSpot || !savedSpot || typeof savedSpot !== 'object') {
-        return defaultSpot ? deepClone(defaultSpot) : null;
-      }
-      const next = deepClone(defaultSpot);
-      if (isFiniteNumber(savedSpot.x)) next.x = clamp(savedSpot.x, 0, 100 - MIN_SPOT_W);
-      if (isFiniteNumber(savedSpot.y)) next.y = clamp(savedSpot.y, 0, 100 - MIN_SPOT_H);
-      if (isFiniteNumber(savedSpot.w)) next.w = clamp(savedSpot.w, MIN_SPOT_W, 100 - next.x);
-      if (isFiniteNumber(savedSpot.h)) next.h = clamp(savedSpot.h, MIN_SPOT_H, 100 - next.y);
-      return next;
-    }
-
-    function buildSlidesById() {
+      const slideOrder = [];
       const slidesById = {};
-      for (const slide of workingSlides) {
-        slidesById[slide.id] = {
-          id: slide.id,
-          note: slide.note ? deepClone(slide.note) : null,
-          callout: slide.callout ? deepClone(slide.callout) : null,
-          spot: slide.spot ? deepClone(slide.spot) : null
-        };
+
+      for (const id of raw.slideOrder) {
+        if (typeof id !== 'string') continue;
+        const normalized = normalizeSlide(raw.slidesById[id], id);
+        slidesById[id] = normalized;
+        slideOrder.push(id);
       }
-      return slidesById;
+
+      if (!slideOrder.length) return null;
+
+      return {
+        schemaVersion: STORAGE_SCHEMA_VERSION,
+        savedAt: isFiniteNumber(raw.savedAt) ? raw.savedAt : Date.now(),
+        currentSlideId: slideOrder.includes(raw.currentSlideId) ? raw.currentSlideId : slideOrder[0],
+        slideOrder,
+        slidesById
+      };
     }
 
-    function buildPresentationState(savedAt = Date.now()) {
+    function buildStatePayload(savedAt = Date.now()) {
       return {
         schemaVersion: STORAGE_SCHEMA_VERSION,
         savedAt,
         currentSlideId,
-        slidesById: buildSlidesById()
+        slideOrder: deepClone(presentationState.slideOrder),
+        slidesById: deepClone(presentationState.slidesById)
       };
     }
 
@@ -875,15 +1749,14 @@
       return response.json().catch(() => ({ ok: true }));
     }
 
-    async function persistState({ commit = true, status = true, toFile = false } = {}) {
-      if (commit) commitActiveSlideFromDom();
-      const payload = buildPresentationState();
+    async function persistState({ toFile = false, status = true } = {}) {
+      const payload = buildStatePayload();
       let draftSaved = false;
       try {
         saveDraftPayload(payload);
         draftSaved = true;
       } catch (error) {
-        if (!toFile) setSaveStatus('Save failed');
+        if (!toFile && status) setSaveStatus('Save failed');
       }
 
       if (toFile) {
@@ -893,59 +1766,41 @@
           return true;
         } catch (error) {
           if (draftSaved) {
-            setSaveStatus('Draft saved only - run node server.js');
+            if (status) setSaveStatus('Draft saved only - run node server.js');
             return false;
           }
-          setSaveStatus('Save failed');
+          if (status) setSaveStatus('Save failed');
           return false;
         }
       }
 
-      if (draftSaved) {
-        if (status) {
-          const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-          setSaveStatus(`Draft saved ${timestamp}`);
-        }
-        return true;
+      if (draftSaved && status) {
+        const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        setSaveStatus(`Draft saved ${timestamp}`);
       }
-
-      if (status) setSaveStatus('Save failed');
-      return false;
+      return draftSaved;
     }
 
     function stateTimestamp(state) {
       return state && isFiniteNumber(state.savedAt) ? state.savedAt : 0;
     }
 
-    function applyPresentationState(parsed) {
-      if (!parsed || parsed.schemaVersion !== STORAGE_SCHEMA_VERSION || !parsed.slidesById) {
-        return false;
-      }
-      try {
-        const nextSlides = deepClone(defaultSlides);
-        for (const slide of nextSlides) {
-          const saved = parsed.slidesById[slide.id];
-          if (!saved || typeof saved !== 'object') continue;
-          slide.note = mergeSavedPanel(slide.note, saved.note);
-          slide.callout = mergeSavedPanel(slide.callout, saved.callout);
-          slide.spot = mergeSavedSpot(slide.spot, saved.spot);
-        }
-        workingSlides = nextSlides;
-        currentSlideId = typeof parsed.currentSlideId === 'string' && workingSlides.some((slide) => slide.id === parsed.currentSlideId)
-          ? parsed.currentSlideId
-          : workingSlides[0].id;
-        return true;
-      } catch (error) {
-        return false;
-      }
+    function applyNormalizedState(normalized) {
+      if (!normalized) return false;
+      presentationState = {
+        slideOrder: deepClone(normalized.slideOrder),
+        slidesById: deepClone(normalized.slidesById)
+      };
+      currentSlideId = normalizeText(normalized.currentSlideId, presentationState.slideOrder[0]);
+      selectedItemId = null;
+      return true;
     }
 
     function loadDraftState() {
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
         if (!raw) return null;
-        const parsed = JSON.parse(raw);
-        return parsed && parsed.schemaVersion === STORAGE_SCHEMA_VERSION ? parsed : null;
+        return normalizeState(JSON.parse(raw));
       } catch (error) {
         setSaveStatus('Storage unavailable');
         return null;
@@ -953,136 +1808,446 @@
     }
 
     function loadState() {
-      let loaded = false;
-      let loadedSource = '';
-      const hardcodedState = HARDCODED_PRESENTATION_STATE;
-      if (applyPresentationState(hardcodedState)) {
-        loaded = true;
-        loadedSource = 'file';
+      const hardcoded = normalizeState(HARDCODED_PRESENTATION_STATE);
+      const draft = loadDraftState();
+      const legacyCandidates = [];
+      for (const key of OLD_STORAGE_KEYS) {
+        try {
+          const raw = localStorage.getItem(key);
+          if (raw) legacyCandidates.push(normalizeState(JSON.parse(raw)));
+        } catch (error) {}
       }
 
-      const draftState = loadDraftState();
-      if (draftState && (!loaded || stateTimestamp(draftState) > stateTimestamp(hardcodedState))) {
-        if (applyPresentationState(draftState)) {
-          loaded = true;
-          loadedSource = 'draft';
+      let chosen = hardcoded || normalizeState(buildStatePayload());
+      let source = hardcoded ? 'file' : 'default';
+
+      const candidates = [draft, ...legacyCandidates].filter(Boolean);
+      for (const candidate of candidates) {
+        if (!chosen || stateTimestamp(candidate) > stateTimestamp(chosen)) {
+          chosen = candidate;
+          source = candidate === draft ? 'draft' : 'migrated draft';
         }
       }
 
-      if (loadedSource === 'file') setSaveStatus('Loaded file state');
-      if (loadedSource === 'draft') setSaveStatus('Loaded draft state');
-      return loaded;
+      if (!chosen) {
+        chosen = normalizeState({
+          schemaVersion: STORAGE_SCHEMA_VERSION,
+          savedAt: Date.now(),
+          currentSlideId: defaultSlides.slideOrder[0],
+          slideOrder: defaultSlides.slideOrder,
+          slidesById: defaultSlides.slidesById
+        });
+      }
+
+      applyNormalizedState(chosen);
+      if (source === 'file') setSaveStatus('Loaded file state');
+      if (source === 'draft') setSaveStatus('Loaded draft state');
+      if (source === 'migrated draft') setSaveStatus('Loaded migrated draft');
     }
 
     function resetState() {
       try {
-        for (const key of [STORAGE_KEY, ...OLD_STORAGE_KEYS]) localStorage.removeItem(key);
+        localStorage.removeItem(STORAGE_KEY);
+        for (const key of OLD_STORAGE_KEYS) localStorage.removeItem(key);
       } catch (error) {}
       location.reload();
     }
 
-    function render(force = false) {
+    function currentSlideItemsSorted() {
       const slide = currentSlide();
-      const index = currentIndex();
-      const mode = slide.mode || 'live';
-      const isLive = mode === 'live';
-      const showMedia = mode === 'media';
-      const showTransition = mode === 'transition';
+      sortItems(slide);
+      return slide.items;
+    }
 
-      mediaSlide.classList.toggle('visible', showMedia);
-      introAnimation.classList.toggle('visible', showTransition);
-      frame.style.visibility = showMedia ? 'hidden' : 'visible';
-      frame.style.pointerEvents = showMedia ? 'none' : '';
-      if (showMedia) {
-        mediaSlideImage.src = slide.media?.src || '';
-      }
+    function supportsIntro(slide) {
+      return slide.mode === 'live';
+    }
 
-      clearTimeout(introAnimationTimer);
-      if (showTransition) {
-        introAnimationTimer = setTimeout(() => {
-          introAnimation.classList.remove('visible');
-        }, 3000);
-      }
+    function setIframeIntro(visible) {
+      if (!frameLoaded) return;
+      try {
+        const doc = siteFrame.contentDocument;
+        const overlay = doc && doc.getElementById('introOverlay');
+        if (overlay) overlay.classList.toggle('dismissed', !visible);
+      } catch (error) {}
+    }
 
-      if (!isLive) {
-        introNote.classList.remove('visible');
-        callout.classList.remove('visible');
-        spotlight.classList.remove('visible');
-      }
-
-      const shouldRebuildPanels = force || renderedSlideId !== slide.id;
-      if (isLive) {
-        setIframeIntro(slide.intro);
-        if (shouldRebuildPanels) {
-          setPanelContent(introNote, slide.note);
-          setPanelContent(callout, slide.callout);
-          renderedSlideId = slide.id;
-        } else {
-          introNote.classList.toggle('visible', Boolean(slide.note));
-          callout.classList.toggle('visible', Boolean(slide.callout));
+    function setWeakDemoPassword() {
+      try {
+        const doc = siteFrame.contentDocument;
+        const newPassInput = doc && doc.getElementById('newPassphraseInput');
+        if (newPassInput && newPassInput.value !== 'mesa') {
+          newPassInput.value = 'mesa';
+          newPassInput.dispatchEvent(new siteFrame.contentWindow.Event('input', { bubbles: true }));
         }
-        setSpotlight(slide.dim ? slide.spot : null);
+      } catch (error) {}
+    }
+
+    function setEditable(on) {
+      stage.classList.toggle('edit-enabled', on && !isPresenting);
+      stage.classList.toggle('block-site', !(on && !isPresenting));
+      for (const field of overlayLayer.querySelectorAll('.editable-field')) {
+        field.setAttribute('contenteditable', on && !isPresenting ? 'true' : 'false');
       }
-      setEditable(editToggle.checked);
-      slideLabel.textContent = `Step ${index + 1} / ${workingSlides.length}: ${slide.label}`;
-      progressFill.style.width = `${((index + 1) / workingSlides.length) * 100}%`;
+    }
+
+    function markUnsavedAndAutosave() {
+      setSaveStatus('Unsaved changes');
+      clearTimeout(autosaveTimer);
+      autosaveTimer = setTimeout(() => {
+        persistState({ toFile: false, status: true });
+      }, 350);
+    }
+
+    function renderSlideList() {
+      slideList.replaceChildren();
+      orderedSlides().forEach((slide, index) => {
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = `slide-card${slide.id === currentSlideId ? ' active' : ''}`;
+        card.dataset.slideId = slide.id;
+
+        const title = document.createElement('strong');
+        title.textContent = `${index + 1}. ${slide.label}`;
+        const meta = document.createElement('span');
+        meta.textContent = `${slide.mode} | ${slide.items.length} item${slide.items.length === 1 ? '' : 's'}`;
+        card.append(title, meta);
+        slideList.append(card);
+      });
+    }
+
+    function renderItemList() {
+      itemList.replaceChildren();
+      const slide = currentSlide();
+      if (!slide) return;
+      currentSlideItemsSorted().forEach((item) => {
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = `item-card${item.id === selectedItemId ? ' active' : ''}`;
+        card.dataset.itemId = item.id;
+
+        const title = document.createElement('strong');
+        title.textContent = item.type;
+        const meta = document.createElement('span');
+        const label = item.title || item.eyebrow || item.src || 'Untitled';
+        meta.textContent = `${item.visible === false ? 'hidden' : 'visible'} | ${label}`;
+        card.append(title, meta);
+        itemList.append(card);
+      });
+    }
+
+    function setItemGeometry(el, item) {
+      el.style.left = `${item.x}%`;
+      el.style.top = `${item.y}%`;
+      el.style.width = `${item.w}%`;
+      el.style.height = `${item.h}%`;
+      el.style.zIndex = String(item.z || 1);
+    }
+
+    function buildResizeHandles(allDirections) {
+      const handles = [];
+      if (allDirections) {
+        handles.push(handleNode('right', 'resize-handle resize-right'));
+        handles.push(handleNode('bottom', 'resize-handle resize-bottom'));
+      }
+      handles.push(handleNode('corner', 'resize-handle resize-corner'));
+      return handles;
+    }
+
+    function handleNode(edge, className) {
+      const node = document.createElement('span');
+      node.className = className;
+      node.dataset.resize = edge;
+      node.setAttribute('contenteditable', 'false');
+      return node;
+    }
+
+    function makeEditableField(tag, field, value) {
+      const el = document.createElement(tag);
+      el.className = tag === 'p' ? 'item-body editable-field' : 'item-title editable-field';
+      if (tag === 'span') el.className = 'editable-field';
+      el.dataset.field = field;
+      el.textContent = value || '';
+      el.setAttribute('contenteditable', editToggle.checked && !isPresenting ? 'true' : 'false');
+      return el;
+    }
+
+    function renderOverlayItems() {
+      overlayLayer.replaceChildren();
+      const slide = currentSlide();
+      if (!slide) return;
+      currentSlideItemsSorted().forEach((item) => {
+        const el = document.createElement('div');
+        el.className = `canvas-item${item.visible === false ? ' hidden' : ''}${item.id === selectedItemId ? ' selected' : ''}`;
+        el.dataset.itemId = item.id;
+        el.dataset.type = item.type;
+        setItemGeometry(el, item);
+
+        if (item.type === 'spotlight') {
+          buildResizeHandles(true).forEach((node) => el.append(node));
+        } else if (item.type === 'media') {
+          const img = document.createElement('img');
+          img.src = item.src || '';
+          img.alt = 'Slide media';
+          el.append(img, ...buildResizeHandles(false));
+        } else {
+          if (item.type !== 'text-box') {
+            const eyebrowRow = document.createElement('div');
+            eyebrowRow.className = 'item-eyebrow';
+            const eyebrow = document.createElement('span');
+            eyebrow.className = 'editable-field';
+            eyebrow.dataset.field = 'eyebrow';
+            eyebrow.textContent = item.eyebrow || '';
+            eyebrow.setAttribute('contenteditable', editToggle.checked && !isPresenting ? 'true' : 'false');
+            const chip = document.createElement('span');
+            chip.className = 'drag-chip';
+            chip.textContent = 'Move';
+            eyebrowRow.append(eyebrow, chip);
+            el.append(eyebrowRow);
+          }
+
+          const title = makeEditableField('h2', 'title', item.title || '');
+          const body = document.createElement('p');
+          body.className = 'item-body editable-field';
+          body.dataset.field = 'body';
+          body.textContent = item.body || '';
+          body.setAttribute('contenteditable', editToggle.checked && !isPresenting ? 'true' : 'false');
+          el.append(title, body, ...buildResizeHandles(RESIZABLE_ALL_DIRECTIONS.includes(item.type)));
+        }
+
+        overlayLayer.append(el);
+      });
+    }
+
+    function renderSlideMeta() {
+      const slide = currentSlide();
+      if (!slide) return;
+      const index = currentIndex();
+      const total = presentationState.slideOrder.length;
+      slideLabel.textContent = `Step ${index + 1} / ${total}: ${slide.label}`;
+      presenterStep.textContent = `Step ${index + 1} / ${total}`;
+      progressFill.style.width = `${((index + 1) / total) * 100}%`;
+      modeBadge.textContent = isPresenting ? 'Presenting' : `Editing ${slide.mode} slide`;
+      currentSlideMeta.textContent = `${slide.label} | mode: ${slide.mode} | items: ${slide.items.length}${slide.intro ? ' | intro banner on' : ''}`;
       backBtn.disabled = index === 0;
-      nextBtn.textContent = index === workingSlides.length - 1 ? 'Restart' : 'Next';
+      nextBtn.textContent = index === total - 1 ? 'Restart' : 'Next';
+      moveSlideUpBtn.disabled = index === 0;
+      moveSlideDownBtn.disabled = index === total - 1;
+      deleteSlideBtn.disabled = total <= 1;
+      const hasSelection = Boolean(selectedItem());
+      bringForwardBtn.disabled = !hasSelection;
+      sendBackwardBtn.disabled = !hasSelection;
+      toggleVisibilityBtn.disabled = !hasSelection;
+      deleteItemBtn.disabled = !hasSelection;
+    }
+
+    function updateStageMode() {
+      const slide = currentSlide();
+      if (!slide) return;
+      const showFrame = slide.mode === 'live' || slide.mode === 'transition';
+
+      siteFrame.style.display = showFrame ? 'block' : 'none';
+      mediaBackdrop.classList.remove('visible');
+      mediaBackdropImage.removeAttribute('src');
+
+      clearTimeout(transitionTimer);
+      if (slide.mode === 'transition') {
+        transitionLayer.classList.add('visible', 'animate');
+        transitionLayer.setAttribute('aria-hidden', 'false');
+        transitionTimer = setTimeout(() => {
+          transitionLayer.classList.remove('visible', 'animate');
+          transitionLayer.setAttribute('aria-hidden', 'true');
+        }, 3000);
+      } else {
+        transitionLayer.classList.remove('visible', 'animate');
+        transitionLayer.setAttribute('aria-hidden', 'true');
+      }
+
+      setIframeIntro(supportsIntro(slide) && slide.intro);
+    }
+
+    function render() {
+      renderToken += 1;
+      renderSlideList();
+      renderItemList();
+      renderOverlayItems();
+      renderSlideMeta();
+      updateStageMode();
+      setEditable(editToggle.checked);
+    }
+
+    function selectedItem() {
+      return itemById(currentSlide(), selectedItemId);
+    }
+
+    function selectItem(itemId) {
+      selectedItemId = itemId;
+      render();
+    }
+
+    function goToSlide(id) {
+      if (!presentationState.slidesById[id]) return;
+      currentSlideId = id;
+      selectedItemId = null;
+      render();
+      persistState({ toFile: false, status: false });
     }
 
     function goToIndex(index) {
-      commitActiveSlideFromDom();
-      const nextIndex = clamp(index, 0, workingSlides.length - 1);
-      currentSlideId = workingSlides[nextIndex].id;
-      render(true);
-      persistState({ commit: false });
+      const clamped = clamp(index, 0, presentationState.slideOrder.length - 1);
+      goToSlide(presentationState.slideOrder[clamped]);
     }
 
     function next() {
       const index = currentIndex();
-      goToIndex(index === workingSlides.length - 1 ? 0 : index + 1);
+      if (index === presentationState.slideOrder.length - 1) {
+        goToIndex(0);
+        return;
+      }
+      goToIndex(index + 1);
     }
 
     function back() {
       goToIndex(Math.max(0, currentIndex() - 1));
     }
 
-    function markUnsavedAndAutosave() {
-      setSaveStatus('Unsaved changes');
-      clearTimeout(autosaveTimer);
-      autosaveTimer = setTimeout(() => persistState(), 350);
+    function insertSlideAfterCurrent(slide) {
+      presentationState.slidesById[slide.id] = slide;
+      presentationState.slideOrder.splice(currentIndex() + 1, 0, slide.id);
+      currentSlideId = slide.id;
+      selectedItemId = null;
+      markUnsavedAndAutosave();
+      render();
+    }
+
+    function addSlide() {
+      const slide = normalizeSlide({
+        id: nextId('slide'),
+        label: `New slide ${presentationState.slideOrder.length + 1}`,
+        mode: 'live',
+        intro: false,
+        items: []
+      });
+      insertSlideAfterCurrent(slide);
+    }
+
+    function duplicateSlide() {
+      const source = deepClone(currentSlide());
+      source.id = nextId('slide');
+      source.label = `${source.label} copy`;
+      source.items = source.items.map((item, index) => normalizeItem({ ...item, id: nextId(item.type), z: index + 1 }, index));
+      insertSlideAfterCurrent(source);
+    }
+
+    function deleteSlide() {
+      if (presentationState.slideOrder.length <= 1) return;
+      const index = currentIndex();
+      delete presentationState.slidesById[currentSlideId];
+      presentationState.slideOrder.splice(index, 1);
+      currentSlideId = presentationState.slideOrder[Math.max(0, index - 1)];
+      selectedItemId = null;
+      markUnsavedAndAutosave();
+      render();
+    }
+
+    function moveSlide(delta) {
+      const order = presentationState.slideOrder;
+      const index = currentIndex();
+      const target = index + delta;
+      if (target < 0 || target >= order.length) return;
+      const [id] = order.splice(index, 1);
+      order.splice(target, 0, id);
+      markUnsavedAndAutosave();
+      render();
+    }
+
+    function cycleSlideMode() {
+      const slide = currentSlide();
+      const index = MODES.indexOf(slide.mode);
+      slide.mode = MODES[(index + 1) % MODES.length];
+      if (slide.mode !== 'live') slide.intro = false;
+      markUnsavedAndAutosave();
+      render();
+    }
+
+    function addItem(type) {
+      const slide = currentSlide();
+      const nextZ = slide.items.length + 1;
+      const item = buildItem(type, { z: nextZ });
+      slide.items.push(item);
+      ensureSequentialZ(slide);
+      selectedItemId = item.id;
+      markUnsavedAndAutosave();
+      render();
+    }
+
+    function deleteSelectedItem() {
+      const slide = currentSlide();
+      const index = slide.items.findIndex((item) => item.id === selectedItemId);
+      if (index < 0) return;
+      slide.items.splice(index, 1);
+      ensureSequentialZ(slide);
+      selectedItemId = slide.items[Math.max(0, index - 1)]?.id || null;
+      markUnsavedAndAutosave();
+      render();
+    }
+
+    function changeSelectedZ(delta) {
+      const slide = currentSlide();
+      const index = slide.items.findIndex((item) => item.id === selectedItemId);
+      if (index < 0) return;
+      const target = index + delta;
+      if (target < 0 || target >= slide.items.length) return;
+      const [item] = slide.items.splice(index, 1);
+      slide.items.splice(target, 0, item);
+      ensureSequentialZ(slide);
+      markUnsavedAndAutosave();
+      render();
+    }
+
+    function toggleSelectedVisibility() {
+      const item = selectedItem();
+      if (!item) return;
+      item.visible = item.visible === false;
+      markUnsavedAndAutosave();
+      render();
     }
 
     function pointerElement(target) {
       return target && target.nodeType === Node.TEXT_NODE ? target.parentElement : target;
     }
 
-    function panelDragTarget(target) {
-      const baseTarget = pointerElement(target);
-      if (!baseTarget || typeof baseTarget.closest !== 'function') return null;
-      const panel = baseTarget.closest('.callout.visible, .note-panel.visible');
-      if (!panel) return null;
-      return baseTarget.closest('.drag-handle') ? panel : null;
+    function shouldIgnorePointerTarget(target) {
+      return Boolean(target.closest('.editable-field')) && editToggle.checked && !isPresenting;
     }
 
-    stage.addEventListener('pointerdown', (event) => {
-      if (!editToggle.checked) return;
+    function beginPointerAction(event) {
+      if (!(editToggle.checked && !isPresenting)) return;
       const baseTarget = pointerElement(event.target);
       if (!baseTarget || typeof baseTarget.closest !== 'function') return;
+      if (shouldIgnorePointerTarget(baseTarget) && !baseTarget.closest('.resize-handle') && !baseTarget.closest('.drag-chip')) return;
 
       const resizeHandle = baseTarget.closest('.resize-handle');
-      const panelTarget = panelDragTarget(baseTarget);
-      const spotlightTarget = baseTarget.closest('.spotlight.visible');
-      const target = resizeHandle ? spotlight : panelTarget || spotlightTarget;
-      if (!target) return;
+      const itemEl = baseTarget.closest('.canvas-item');
+      if (!itemEl) return;
+      const itemId = itemEl.dataset.itemId;
+      if (!itemId) return;
 
-      const rect = target.getBoundingClientRect();
+      if (selectedItemId !== itemId) {
+        selectedItemId = itemId;
+        render();
+      }
+
+      const item = selectedItem();
+      if (!item || !POSITIONABLE_TYPES.includes(item.type)) return;
+
+      const rect = itemEl.getBoundingClientRect();
       const stageRect = stage.getBoundingClientRect();
       drag = {
-        target,
-        mode: resizeHandle ? 'resize' : 'move',
-        edge: resizeHandle ? resizeHandle.dataset.resize : null,
+        itemId,
         pointerId: event.pointerId,
+        mode: resizeHandle ? 'resize' : 'move',
+        edge: resizeHandle ? resizeHandle.dataset.resize : 'corner',
         startX: event.clientX,
         startY: event.clientY,
         left: rect.left - stageRect.left,
@@ -1092,102 +2257,197 @@
         stageWidth: stageRect.width,
         stageHeight: stageRect.height
       };
-      target.setPointerCapture?.(event.pointerId);
+      itemEl.setPointerCapture?.(event.pointerId);
       event.preventDefault();
-    });
+    }
 
-    stage.addEventListener('pointermove', (event) => {
+    function updateDraggedItem(event) {
       if (!drag) return;
+      const item = selectedItem();
+      if (!item || item.id !== drag.itemId) return;
+
       const dx = event.clientX - drag.startX;
       const dy = event.clientY - drag.startY;
 
-      if (drag.mode === 'resize' && drag.target === spotlight) {
+      if (drag.mode === 'resize') {
         const canResizeX = drag.edge === 'right' || drag.edge === 'corner';
         const canResizeY = drag.edge === 'bottom' || drag.edge === 'corner';
         const maxWidth = drag.stageWidth - drag.left;
         const maxHeight = drag.stageHeight - drag.top;
-        const minWidth = (MIN_SPOT_W / 100) * drag.stageWidth;
-        const minHeight = (MIN_SPOT_H / 100) * drag.stageHeight;
-        const nextWidth = clamp(drag.width + (canResizeX ? dx : 0), minWidth, maxWidth);
-        const nextHeight = clamp(drag.height + (canResizeY ? dy : 0), minHeight, maxHeight);
-        spotlight.style.setProperty('--w', `${(nextWidth / drag.stageWidth) * 100}%`);
-        spotlight.style.setProperty('--h', `${(nextHeight / drag.stageHeight) * 100}%`);
-        return;
+        const minWidthPx = (MIN_ITEM_W / 100) * drag.stageWidth;
+        const minHeightPx = (MIN_ITEM_H / 100) * drag.stageHeight;
+        const nextWidth = clamp(drag.width + (canResizeX ? dx : 0), minWidthPx, maxWidth);
+        const nextHeight = clamp(drag.height + (canResizeY ? dy : 0), minHeightPx, maxHeight);
+        item.w = clamp((nextWidth / drag.stageWidth) * 100, MIN_ITEM_W, 100 - item.x);
+        item.h = clamp((nextHeight / drag.stageHeight) * 100, MIN_ITEM_H, 100 - item.y);
+      } else {
+        const width = (item.w / 100) * drag.stageWidth;
+        const height = (item.h / 100) * drag.stageHeight;
+        const nextLeft = clamp(drag.left + dx, 0, drag.stageWidth - width);
+        const nextTop = clamp(drag.top + dy, 0, drag.stageHeight - height);
+        item.x = clamp((nextLeft / drag.stageWidth) * 100, 0, 100 - item.w);
+        item.y = clamp((nextTop / drag.stageHeight) * 100, 0, 100 - item.h);
       }
 
-      const width = drag.target.offsetWidth;
-      const height = drag.target.offsetHeight;
-      const left = clamp(drag.left + dx, 0, drag.stageWidth - width);
-      const top = clamp(drag.top + dy, 0, drag.stageHeight - height);
-
-      if (drag.target === spotlight) {
-        spotlight.style.setProperty('--x', `${(left / drag.stageWidth) * 100}%`);
-        spotlight.style.setProperty('--y', `${(top / drag.stageHeight) * 100}%`);
-        return;
-      }
-
-      drag.target.style.left = `${(left / drag.stageWidth) * 100}%`;
-      drag.target.style.top = `${(top / drag.stageHeight) * 100}%`;
-      drag.target.style.right = 'auto';
-    });
-
-    function endDrag() {
-      if (!drag) return;
-      drag.target.releasePointerCapture?.(drag.pointerId);
-      drag = null;
+      render();
       setSaveStatus('Unsaved changes');
-      persistState();
     }
 
-    window.addEventListener('pointerup', endDrag);
-    window.addEventListener('pointercancel', endDrag);
+    function endPointerAction() {
+      if (!drag) return;
+      drag = null;
+      persistState({ toFile: false, status: true });
+    }
 
-    stage.addEventListener('input', (event) => {
-      if (event.target && event.target.classList && event.target.classList.contains('editable-field')) {
-        markUnsavedAndAutosave();
+    function renderIntoField(item, field, value) {
+      if (!item) return;
+      if (field === 'eyebrow') item.eyebrow = value;
+      if (field === 'title') item.title = value;
+      if (field === 'body') item.body = value;
+      markUnsavedAndAutosave();
+    }
+
+    function enterPresentMode() {
+      isPresenting = true;
+      workspace.classList.add('present-mode');
+      presenterNav.setAttribute('aria-hidden', 'false');
+      setEditable(false);
+      render();
+      const target = document.documentElement;
+      target.requestFullscreen?.().catch(() => {});
+    }
+
+    function exitPresentMode() {
+      isPresenting = false;
+      workspace.classList.remove('present-mode');
+      presenterNav.setAttribute('aria-hidden', 'true');
+      setEditable(editToggle.checked);
+      render();
+      if (document.fullscreenElement) {
+        document.exitFullscreen?.().catch(() => {});
+      }
+    }
+
+    function handleFullscreenExit() {
+      if (!document.fullscreenElement && isPresenting) {
+        isPresenting = false;
+        workspace.classList.remove('present-mode');
+        presenterNav.setAttribute('aria-hidden', 'true');
+        setEditable(editToggle.checked);
+        render();
+      }
+    }
+
+    stage.addEventListener('pointerdown', beginPointerAction);
+    stage.addEventListener('pointermove', updateDraggedItem);
+    window.addEventListener('pointerup', endPointerAction);
+    window.addEventListener('pointercancel', endPointerAction);
+
+    overlayLayer.addEventListener('click', (event) => {
+      const baseTarget = pointerElement(event.target);
+      const itemEl = baseTarget && baseTarget.closest('.canvas-item');
+      if (!itemEl) return;
+      const itemId = itemEl.dataset.itemId;
+      if (!itemId) return;
+      if (selectedItemId !== itemId) {
+        selectedItemId = itemId;
+        render();
       }
     });
 
-    saveBtn.addEventListener('click', () => persistState({ toFile: true }));
+    overlayLayer.addEventListener('input', (event) => {
+      const baseTarget = pointerElement(event.target);
+      if (!baseTarget || !baseTarget.classList.contains('editable-field')) return;
+      const itemEl = baseTarget.closest('.canvas-item');
+      if (!itemEl) return;
+      const slide = currentSlide();
+      const item = itemById(slide, itemEl.dataset.itemId);
+      renderIntoField(item, baseTarget.dataset.field, baseTarget.textContent.trim());
+    });
+
+    slideList.addEventListener('click', (event) => {
+      const baseTarget = pointerElement(event.target);
+      const card = baseTarget && baseTarget.closest('.slide-card');
+      if (!card) return;
+      goToSlide(card.dataset.slideId);
+    });
+
+    itemList.addEventListener('click', (event) => {
+      const baseTarget = pointerElement(event.target);
+      const card = baseTarget && baseTarget.closest('.item-card');
+      if (!card) return;
+      selectItem(card.dataset.itemId);
+    });
+
+    addSlideBtn.addEventListener('click', addSlide);
+    duplicateSlideBtn.addEventListener('click', duplicateSlide);
+    moveSlideUpBtn.addEventListener('click', () => moveSlide(-1));
+    moveSlideDownBtn.addEventListener('click', () => moveSlide(1));
+    deleteSlideBtn.addEventListener('click', deleteSlide);
+    toggleSlideModeBtn.addEventListener('click', cycleSlideMode);
+    addHighlightBtn.addEventListener('click', () => addItem('spotlight'));
+    addCalloutBtn.addEventListener('click', () => addItem('callout'));
+    addNoteBtn.addEventListener('click', () => addItem('note'));
+    addTextBtn.addEventListener('click', () => addItem('text-box'));
+    addMediaBtn.addEventListener('click', () => addItem('media'));
+    addIntroCardBtn.addEventListener('click', () => addItem('intro-card'));
+    bringForwardBtn.addEventListener('click', () => changeSelectedZ(1));
+    sendBackwardBtn.addEventListener('click', () => changeSelectedZ(-1));
+    toggleVisibilityBtn.addEventListener('click', toggleSelectedVisibility);
+    deleteItemBtn.addEventListener('click', deleteSelectedItem);
+    saveBtn.addEventListener('click', () => persistState({ toFile: true, status: true }));
     resetBtn.addEventListener('click', resetState);
     backBtn.addEventListener('click', back);
     nextBtn.addEventListener('click', next);
+    presentBtn.addEventListener('click', enterPresentMode);
+    exitPresentBtn.addEventListener('click', exitPresentMode);
+    presentBackBtn.addEventListener('click', back);
+    presentNextBtn.addEventListener('click', next);
     editToggle.addEventListener('change', () => setEditable(editToggle.checked));
 
     window.addEventListener('keydown', (event) => {
       const active = document.activeElement;
       if (active && active.classList && active.classList.contains('editable-field')) return;
-      if (event.key === 'ArrowRight' || event.key === ' ') { event.preventDefault(); next(); }
-      if (event.key === 'ArrowLeft') { event.preventDefault(); back(); }
+      if (event.key === 'ArrowRight' || event.key === ' ') {
+        event.preventDefault();
+        next();
+      }
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        back();
+      }
+      if (event.key === 'Escape' && isPresenting) {
+        event.preventDefault();
+        exitPresentMode();
+      }
     });
 
-    function setWeakDemoPassword() {
-      try {
-        const doc = frame.contentDocument;
-        const newPassInput = doc && doc.getElementById('newPassphraseInput');
-        if (newPassInput) {
-          newPassInput.value = 'mesa';
-          newPassInput.dispatchEvent(new frame.contentWindow.Event('input', { bubbles: true }));
-        }
-      } catch (error) {}
-    }
+    document.addEventListener('fullscreenchange', handleFullscreenExit);
+    window.addEventListener('beforeunload', () => {
+      persistState({ toFile: false, status: false });
+    });
 
-    frame.addEventListener('load', () => {
+    siteFrame.addEventListener('load', () => {
       frameLoaded = true;
-      setIframeIntro(currentSlide().intro);
       setWeakDemoPassword();
+      setIframeIntro(supportsIntro(currentSlide()) && currentSlide().intro);
       try {
-        const doc = frame.contentDocument;
+        const doc = siteFrame.contentDocument;
         doc.addEventListener('keydown', (event) => {
-          if (event.key === 'ArrowRight' || event.key === ' ') { event.preventDefault(); next(); }
-          if (event.key === 'ArrowLeft') { event.preventDefault(); back(); }
+          if (event.key === 'ArrowRight' || event.key === ' ') {
+            event.preventDefault();
+            next();
+          }
+          if (event.key === 'ArrowLeft') {
+            event.preventDefault();
+            back();
+          }
         });
       } catch (error) {}
     });
 
     loadState();
-    render(true);
+    render();
   </script>
 </body>
 </html>
-
