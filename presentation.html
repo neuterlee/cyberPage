@@ -1,0 +1,1065 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Monash Password Redesign - Guided Presentation</title>
+  <style>
+    :root {
+      --mono-blue: #006dae;
+      --mono-blue-dark: #005a9c;
+      --mono-navy: #002145;
+      --bg: #eef2f7;
+      --surface: #ffffff;
+      --border: #c9d6e8;
+      --text: #132238;
+      --muted: #5a6678;
+      --shadow: rgba(6, 24, 44, 0.16);
+      --shade: rgba(10, 21, 38, 0.56);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      font-family: Roboto, Arial, Helvetica, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    .deck { width: min(1600px, calc(100vw - 28px)); display: grid; gap: 10px; }
+    .topbar, .bottombar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      background: rgba(255, 255, 255, 0.94);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      box-shadow: 0 8px 24px rgba(22, 45, 75, 0.08);
+    }
+
+    .title-group { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .deck-title { margin: 0; font-size: 16px; color: var(--mono-navy); font-weight: 800; letter-spacing: -0.01em; }
+    .deck-subtitle { margin: 0; color: var(--muted); font-size: 12px; }
+    .mode-row { display: inline-flex; align-items: center; gap: 10px; color: var(--muted); font-size: 13px; white-space: nowrap; }
+
+    .stage {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: 0 18px 50px var(--shadow);
+    }
+
+    .site-frame { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: #fff; }
+    .stage.block-site .site-frame { pointer-events: none; }
+
+    .spotlight {
+      position: absolute;
+      left: var(--x);
+      top: var(--y);
+      width: var(--w);
+      height: var(--h);
+      border: 2px solid rgba(0, 109, 174, 0.92);
+      border-radius: 8px;
+      box-shadow: 0 0 0 9999px var(--shade), 0 0 0 6px rgba(0, 109, 174, 0.12);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 220ms ease, border-color 220ms ease;
+    }
+    .spotlight.visible { opacity: 1; pointer-events: auto; }
+    .spotlight::after {
+      content: "";
+      position: absolute;
+      inset: -8px;
+      border: 1px solid rgba(255, 255, 255, 0.72);
+      border-radius: 12px;
+      pointer-events: none;
+    }
+    .spotlight .resize-handle {
+      position: absolute;
+      display: none;
+      background: var(--mono-blue);
+      border: 2px solid #fff;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+      z-index: 2;
+    }
+    .spotlight .resize-right {
+      top: 50%;
+      right: 5px;
+      width: 10px;
+      height: min(48px, 70%);
+      border-radius: 999px;
+      cursor: ew-resize;
+      transform: translateY(-50%);
+    }
+    .spotlight .resize-bottom {
+      left: 50%;
+      bottom: 5px;
+      width: min(52px, 70%);
+      height: 10px;
+      border-radius: 999px;
+      cursor: ns-resize;
+      transform: translateX(-50%);
+    }
+    .spotlight .resize-corner {
+      right: 7px;
+      bottom: 7px;
+      width: 19px;
+      height: 19px;
+      border-radius: 50%;
+      cursor: nwse-resize;
+    }
+
+    .note-panel, .callout {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.98);
+      border: 1px solid #bfd1e8;
+      border-radius: 8px;
+      box-shadow: 0 14px 36px rgba(7, 29, 55, 0.16);
+      color: #172033;
+      line-height: 1.45;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 220ms ease, transform 220ms ease;
+    }
+    .note-panel.visible, .callout.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    .note-panel { right: 3.2%; top: 20%; width: min(360px, 27%); padding: 18px 20px; }
+    .callout { left: var(--x); top: var(--y); width: min(340px, 28%); padding: 14px 16px; }
+    .note-panel .eyebrow, .callout .eyebrow {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--mono-blue-dark);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .drag-handle {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-left: 8px;
+      padding: 2px 7px;
+      border: 1px solid #b8c9df;
+      border-radius: 999px;
+      background: #f7fafc;
+      color: #44556b;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: none;
+      letter-spacing: 0.01em;
+      user-select: none;
+      cursor: move;
+    }
+    .note-panel h2, .callout h2 { margin: 0 0 8px; color: var(--mono-navy); font-size: 21px; line-height: 1.2; }
+    .callout h2 { font-size: 18px; }
+    .note-panel p, .callout p { margin: 0; font-size: 14px; color: #344054; }
+
+    .edit-on .spotlight.visible, .edit-on .callout.visible, .edit-on .note-panel.visible { cursor: move; }
+    .edit-on .spotlight.visible .resize-handle { display: block; }
+    .editable-field[contenteditable="true"] { cursor: text; }
+    .editable-field[contenteditable="true"]:focus { outline: 2px solid var(--mono-blue); outline-offset: 3px; border-radius: 4px; }
+
+    .slide-label { min-width: 220px; color: var(--mono-navy); font-weight: 800; font-size: 14px; }
+    .progress { flex: 1; height: 8px; background: #d8e2f0; border-radius: 999px; overflow: hidden; border: 1px solid #c5d3e6; }
+    .progress span { display: block; height: 100%; width: 0%; background: var(--mono-blue); transition: width 220ms ease; }
+    .nav { display: inline-flex; align-items: center; gap: 8px; }
+    .save-status {
+      color: #4f5f73;
+      font-size: 12px;
+      min-width: 120px;
+      text-align: right;
+    }
+    button {
+      height: 36px;
+      border: 1px solid #b8c9df;
+      border-radius: 6px;
+      background: #fff;
+      color: var(--mono-navy);
+      font: inherit;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    button.primary { min-width: 108px; background: var(--mono-blue); border-color: var(--mono-blue); color: #fff; }
+    button.secondary { min-width: 88px; padding: 0 14px; }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
+    button:not(:disabled):hover { filter: brightness(0.97); }
+    .hint { color: var(--muted); font-size: 12px; white-space: nowrap; }
+    .edit-note { display: none; color: #526173; font-size: 12px; text-align: right; }
+    .edit-on-ui .edit-note { display: block; }
+
+    @media (max-width: 980px) {
+      body { padding: 8px; }
+      .deck { width: calc(100vw - 16px); }
+      .topbar, .bottombar { flex-wrap: wrap; }
+      .note-panel { width: 40%; right: 2%; }
+      .callout { width: 38%; }
+      .hint { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <main id="deck" class="deck">
+    <header class="topbar">
+      <div class="title-group">
+        <h1 class="deck-title">Monash password redesign - guided story</h1>
+        <p class="deck-subtitle">Uses the live prototype page underneath. Edit text and move boxes as needed.</p>
+      </div>
+      <label class="mode-row"><input id="editToggle" type="checkbox" /> Edit mode</label>
+    </header>
+
+    <section id="stage" class="stage block-site" aria-label="Presentation stage">
+      <iframe id="siteFrame" class="site-frame" src="./index.html" title="Live Monash password prototype"></iframe>
+      <div id="spotlight" class="spotlight" aria-hidden="true">
+        <span class="resize-handle resize-right" data-resize="right" aria-hidden="true"></span>
+        <span class="resize-handle resize-bottom" data-resize="bottom" aria-hidden="true"></span>
+        <span class="resize-handle resize-corner" data-resize="corner" aria-hidden="true"></span>
+      </div>
+      <aside id="introNote" class="note-panel" contenteditable="false"></aside>
+      <aside id="callout" class="callout" contenteditable="false"></aside>
+    </section>
+
+    <footer class="bottombar">
+      <div id="slideLabel" class="slide-label">Step 1 / 7</div>
+      <div class="progress" aria-hidden="true"><span id="progressFill"></span></div>
+      <div class="nav">
+        <button id="saveBtn" class="secondary" type="button">Save</button>
+        <button id="resetBtn" class="secondary" type="button">Reset draft</button>
+        <button id="backBtn" class="secondary" type="button">Back</button>
+        <button id="nextBtn" class="primary" type="button">Next</button>
+      </div>
+      <div class="hint">Keyboard: Left / Right arrows, Space</div>
+      <div id="saveStatus" class="save-status">Not saved</div>
+      <div class="edit-note">Edit mode: drag spotlight/callout; click text to rewrite it.</div>
+    </footer>
+  </main>
+
+  <script>
+    const stage = document.getElementById('stage');
+    const deck = document.getElementById('deck');
+    const frame = document.getElementById('siteFrame');
+    const spotlight = document.getElementById('spotlight');
+    const introNote = document.getElementById('introNote');
+    const callout = document.getElementById('callout');
+    const editToggle = document.getElementById('editToggle');
+    const saveBtn = document.getElementById('saveBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const backBtn = document.getElementById('backBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const slideLabel = document.getElementById('slideLabel');
+    const progressFill = document.getElementById('progressFill');
+    const saveStatus = document.getElementById('saveStatus');
+
+    const STORAGE_KEY = 'monash-presentation-state-v5';
+    const OLD_STORAGE_KEYS = [
+      'monash-presentation-state-v1',
+      'monash-presentation-state-v2',
+      'monash-presentation-state-v3',
+      'monash-presentation-state-v4'
+    ];
+    const STORAGE_SCHEMA_VERSION = 5;
+    const MIN_SPOT_W = 10;
+    const MIN_SPOT_H = 8;
+
+    const defaultSlides = [
+      {
+        id: 'opening-banner',
+        label: 'Opening banner',
+        intro: true,
+        dim: false
+      },
+      {
+        id: 'banner-context',
+        label: 'Banner context',
+        intro: true,
+        dim: true,
+        spot: { x: 34, y: 27, w: 33, h: 32 },
+        note: {
+          eyebrow: 'Opening moment',
+          title: 'Why pause here?',
+          body: 'This first message gives users a short reason before they make a security decision. Replace this text with your final explanation.'
+        }
+      },
+      {
+        id: 'page-intact',
+        label: 'Page intact',
+        intro: false,
+        dim: false,
+        callout: {
+          x: 63, y: 15,
+          eyebrow: 'Full page',
+          title: 'Show the design first',
+          body: 'The audience sees the redesigned page intact before we start annotating the decisions.'
+        }
+      },
+      {
+        id: 'main-message',
+        label: 'Main message',
+        intro: false,
+        dim: true,
+        spot: { x: 24, y: 20, w: 52, h: 16 },
+        callout: {
+          x: 63, y: 19,
+          eyebrow: 'Message framing',
+          title: 'From password task to passphrase choice',
+          body: 'The page frames the action as creating something easier to remember and harder to guess.'
+        }
+      },
+      {
+        id: 'recommended-path',
+        label: 'Recommended path',
+        intro: false,
+        dim: true,
+        spot: { x: 24, y: 34, w: 52, h: 15 },
+        callout: {
+          x: 62, y: 35,
+          eyebrow: 'Easy',
+          title: 'A simpler valid path',
+          body: 'The recommendation makes the 13+ character route visible without forcing users to parse all rules first.'
+        }
+      },
+      {
+        id: 'short-password-option',
+        label: 'Short password option',
+        intro: false,
+        dim: true,
+        spot: { x: 24, y: 44, w: 52, h: 11 },
+        callout: {
+          x: 62, y: 45,
+          eyebrow: 'Alternative path',
+          title: '8-12 characters can still work',
+          body: 'If users choose a shorter password, they can still meet policy with 3 of 4 character types: upper, lower, number, symbol.'
+        }
+      },
+      {
+        id: 'password-manager-support',
+        label: 'Password manager support',
+        intro: false,
+        dim: true,
+        spot: { x: 24, y: 39, w: 52, h: 10 },
+        callout: {
+          x: 62, y: 39,
+          eyebrow: 'Enablement',
+          title: 'Academic staff support',
+          body: 'The password manager prompt appears before typing starts, as optional support for staff who want help creating or saving a strong password.'
+        }
+      },
+      {
+        id: 'live-checks',
+        label: 'Live checks',
+        intro: false,
+        dim: true,
+        spot: { x: 24, y: 48, w: 35, h: 18 },
+        callout: {
+          x: 61, y: 48,
+          eyebrow: 'Timely',
+          title: 'Feedback appears when useful',
+          body: 'Checks and strength feedback guide the user during the decision, instead of after a failed submission.'
+        }
+      },
+      {
+        id: 'expiry-lifetime',
+        label: 'Password lifetime',
+        intro: false,
+        dim: true,
+        spot: { x: 24, y: 47, w: 35, h: 14 },
+        callout: {
+          x: 61, y: 46,
+          eyebrow: 'Incentive',
+          title: 'Strength changes how long it lasts',
+          body: 'The prototype links stronger passphrases to longer expiry windows, from 2 weeks for weak choices up to 6 months for very strong ones.'
+        }
+      },
+      {
+        id: 'submit-readiness',
+        label: 'Submit readiness',
+        intro: false,
+        dim: true,
+        spot: { x: 24, y: 74, w: 52, h: 12 },
+        callout: {
+          x: 62, y: 72,
+          eyebrow: 'Closure',
+          title: 'Clear next action',
+          body: 'The final button can communicate readiness and reduce trial-and-error at the end of the form.'
+        }
+      }
+    ];
+
+    const HARDCODED_PRESENTATION_STATE = /* PRESENTATION_STATE_START */ {
+  "schemaVersion": 5,
+  "savedAt": 1779499266425,
+  "currentSlideId": "opening-banner",
+  "slidesById": {
+    "opening-banner": {
+      "id": "opening-banner",
+      "note": null,
+      "callout": null,
+      "spot": null
+    },
+    "banner-context": {
+      "id": "banner-context",
+      "note": {
+        "eyebrow": "Opening moment",
+        "title": "Why pause here?",
+        "body": "This first message gives users a short reason before they make a security decision. Replace this text with your final explanation.",
+        "x": 2.4821837943940293,
+        "y": 5.934973111629057
+      },
+      "callout": null,
+      "spot": {
+        "x": 31.815019079636425,
+        "y": 36.271305615958546,
+        "w": 34.87215544959826,
+        "h": 27.681350017578353
+      }
+    },
+    "page-intact": {
+      "id": "page-intact",
+      "note": null,
+      "callout": {
+        "x": 75.75750917360638,
+        "y": 6.605554759827601,
+        "eyebrow": "Full page",
+        "title": "Show the design first",
+        "body": "The audience sees the redesigned page intact before we start annotating the decisions."
+      },
+      "spot": null
+    },
+    "main-message": {
+      "id": "main-message",
+      "note": null,
+      "callout": {
+        "x": 1.7153362190825663,
+        "y": 60.00078126017265,
+        "eyebrow": "Message framing",
+        "title": "From password task to passphrase choice",
+        "body": "The page frames the action as creating something easier to remember and harder to guess."
+      },
+      "spot": {
+        "x": 24.072568536544278,
+        "y": 20.148699852862666,
+        "w": 51.85266565592202,
+        "h": 15.918176017916899
+      }
+    },
+    "recommended-path": {
+      "id": "recommended-path",
+      "note": null,
+      "callout": {
+        "x": 76.28265694008041,
+        "y": 8.32823344053959,
+        "eyebrow": "Easy",
+        "title": "A simpler valid path",
+        "body": "The recommendation makes the 13+ character route visible without forcing users to parse all rules first."
+      },
+      "spot": {
+        "x": 24.048398555660537,
+        "y": 34.05252672560841,
+        "w": 51.901738041352644,
+        "h": 14.948111303532599
+      }
+    },
+    "short-password-option": {
+      "id": "short-password-option",
+      "note": null,
+      "callout": {
+        "x": 61.9886767301678,
+        "y": 45.00709644656831,
+        "eyebrow": "Alternative path",
+        "title": "8-12 characters can still work",
+        "body": "If users choose a shorter password, they can still meet policy with 3 of 4 character types: upper, lower, number, symbol."
+      },
+      "spot": {
+        "x": 24.024228574776792,
+        "y": 44.009687626140966,
+        "w": 51.95081042678326,
+        "h": 10.980611726715193
+      }
+    },
+    "password-manager-support": {
+      "id": "password-manager-support",
+      "note": null,
+      "callout": {
+        "x": 61.9886767301678,
+        "y": 39.01743512285316,
+        "eyebrow": "Enablement",
+        "title": "Academic staff support",
+        "body": "The password manager prompt appears before typing starts, as optional support for staff who want help creating or saving a strong password."
+      },
+      "spot": {
+        "x": 24.024228574776792,
+        "y": 39.01743512285316,
+        "w": 51.95081042678326,
+        "h": 9.983202906287843
+      }
+    },
+    "live-checks": {
+      "id": "live-checks",
+      "note": null,
+      "callout": {
+        "x": 60.98965085363977,
+        "y": 48.003229208713655,
+        "eyebrow": "Timely",
+        "title": "Feedback appears when useful",
+        "body": "Checks and strength feedback guide the user during the decision, instead of after a failed submission."
+      },
+      "spot": {
+        "x": 24.024228574776792,
+        "y": 48.003229208713655,
+        "w": 34.966638102143804,
+        "h": 17.96898397114546
+      }
+    },
+    "expiry-lifetime": {
+      "id": "expiry-lifetime",
+      "note": null,
+      "callout": {
+        "x": 60.98965085363977,
+        "y": 46.00580736728343,
+        "eyebrow": "Incentive",
+        "title": "Strength changes how long it lasts",
+        "body": "The prototype links stronger passphrases to longer expiry windows, from 2 weeks for weak choices up to 6 months for very strong ones."
+      },
+      "spot": {
+        "x": 24.024228574776792,
+        "y": 47.00451828799854,
+        "w": 34.966638102143804,
+        "h": 13.975442388572768
+      }
+    },
+    "submit-readiness": {
+      "id": "submit-readiness",
+      "note": null,
+      "callout": {
+        "x": 61.9886767301678,
+        "y": 71.96317660386204,
+        "eyebrow": "Closure",
+        "title": "Clear next action",
+        "body": "The final button can communicate readiness and reduce trial-and-error at the end of the form."
+      },
+      "spot": {
+        "x": 24.024228574776792,
+        "y": 73.95929634500449,
+        "w": 51.95081042678326,
+        "h": 11.979322647430305
+      }
+    }
+  }
+} /* PRESENTATION_STATE_END */;
+
+    let workingSlides = deepClone(defaultSlides);
+    let currentSlideId = workingSlides[0].id;
+    let frameLoaded = false;
+    let renderedSlideId = null;
+    let drag = null;
+    let autosaveTimer = null;
+
+    function deepClone(value) {
+      if (typeof structuredClone === 'function') return structuredClone(value);
+      return JSON.parse(JSON.stringify(value));
+    }
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function isFiniteNumber(value) {
+      return typeof value === 'number' && Number.isFinite(value);
+    }
+
+    function currentIndex() {
+      const index = workingSlides.findIndex((slide) => slide.id === currentSlideId);
+      if (index >= 0) return index;
+      currentSlideId = workingSlides[0].id;
+      return 0;
+    }
+
+    function currentSlide() {
+      return workingSlides[currentIndex()];
+    }
+
+    function setSaveStatus(text) {
+      saveStatus.textContent = text;
+    }
+
+    function setEditable(on) {
+      deck.classList.toggle('edit-on-ui', on);
+      stage.classList.toggle('edit-on', on);
+      stage.classList.toggle('block-site', !on);
+      for (const field of stage.querySelectorAll('.editable-field')) {
+        field.setAttribute('contenteditable', on ? 'true' : 'false');
+      }
+    }
+
+    function setIframeIntro(visible) {
+      if (!frameLoaded) return;
+      try {
+        const doc = frame.contentDocument;
+        const overlay = doc && doc.getElementById('introOverlay');
+        if (overlay) overlay.classList.toggle('dismissed', !visible);
+      } catch (error) {}
+    }
+
+    function makeEditable(tagName, fieldName, text, className = '') {
+      const el = document.createElement(tagName);
+      el.className = className ? `${className} editable-field` : 'editable-field';
+      el.dataset.field = fieldName;
+      el.textContent = text || '';
+      el.setAttribute('contenteditable', editToggle.checked ? 'true' : 'false');
+      return el;
+    }
+
+    function makeDragHandle() {
+      const handle = document.createElement('span');
+      handle.className = 'drag-handle';
+      handle.textContent = 'Move';
+      handle.setAttribute('contenteditable', 'false');
+      return handle;
+    }
+
+    function setPanelContent(panel, data) {
+      panel.replaceChildren();
+      if (!data) {
+        panel.classList.remove('visible');
+        return;
+      }
+
+      const eyebrowWrap = document.createElement('span');
+      eyebrowWrap.className = 'eyebrow';
+      eyebrowWrap.append(makeEditable('span', 'eyebrow', data.eyebrow || ''), makeDragHandle());
+      const title = makeEditable('h2', 'title', data.title || '');
+      const body = makeEditable('p', 'body', data.body || '');
+      panel.append(eyebrowWrap, title, body);
+
+      if (isFiniteNumber(data.x) && isFiniteNumber(data.y)) {
+        panel.style.left = `${data.x}%`;
+        panel.style.top = `${data.y}%`;
+        panel.style.right = 'auto';
+      } else {
+        panel.style.left = '';
+        panel.style.top = '';
+        panel.style.right = '';
+      }
+      panel.classList.add('visible');
+    }
+
+    function setSpotlight(data) {
+      if (!data) {
+        spotlight.classList.remove('visible');
+        return;
+      }
+      spotlight.style.left = '';
+      spotlight.style.top = '';
+      spotlight.style.right = '';
+      spotlight.style.bottom = '';
+      spotlight.style.setProperty('--x', `${data.x}%`);
+      spotlight.style.setProperty('--y', `${data.y}%`);
+      spotlight.style.setProperty('--w', `${data.w}%`);
+      spotlight.style.setProperty('--h', `${data.h}%`);
+      spotlight.classList.add('visible');
+    }
+
+    function textDataFromPanel(panel) {
+      return {
+        eyebrow: panel.querySelector('[data-field="eyebrow"]')?.textContent?.trim() || '',
+        title: panel.querySelector('[data-field="title"]')?.textContent?.trim() || '',
+        body: panel.querySelector('[data-field="body"]')?.textContent?.trim() || ''
+      };
+    }
+
+    function percentPosition(el) {
+      const rect = el.getBoundingClientRect();
+      const stageRect = stage.getBoundingClientRect();
+      return {
+        x: ((rect.left - stageRect.left) / stageRect.width) * 100,
+        y: ((rect.top - stageRect.top) / stageRect.height) * 100,
+        w: (rect.width / stageRect.width) * 100,
+        h: (rect.height / stageRect.height) * 100
+      };
+    }
+
+    function commitActiveSlideFromDom() {
+      const slide = currentSlide();
+      if (slide.note && introNote.classList.contains('visible')) {
+        Object.assign(slide.note, textDataFromPanel(introNote));
+        const pos = percentPosition(introNote);
+        slide.note.x = clamp(pos.x, 0, 96);
+        slide.note.y = clamp(pos.y, 0, 96);
+      }
+      if (slide.callout && callout.classList.contains('visible')) {
+        Object.assign(slide.callout, textDataFromPanel(callout));
+        const pos = percentPosition(callout);
+        slide.callout.x = clamp(pos.x, 0, 96);
+        slide.callout.y = clamp(pos.y, 0, 96);
+      }
+      if (slide.spot && spotlight.classList.contains('visible')) {
+        const pos = percentPosition(spotlight);
+        slide.spot.x = clamp(pos.x, 0, 100 - MIN_SPOT_W);
+        slide.spot.y = clamp(pos.y, 0, 100 - MIN_SPOT_H);
+        slide.spot.w = clamp(pos.w, MIN_SPOT_W, 100 - slide.spot.x);
+        slide.spot.h = clamp(pos.h, MIN_SPOT_H, 100 - slide.spot.y);
+      }
+    }
+
+    function mergeSavedPanel(defaultPanel, savedPanel) {
+      if (!defaultPanel || !savedPanel || typeof savedPanel !== 'object') {
+        return defaultPanel ? deepClone(defaultPanel) : null;
+      }
+      const next = deepClone(defaultPanel);
+      if (typeof savedPanel.eyebrow === 'string') next.eyebrow = savedPanel.eyebrow;
+      if (typeof savedPanel.title === 'string') next.title = savedPanel.title;
+      if (typeof savedPanel.body === 'string') next.body = savedPanel.body;
+      if (isFiniteNumber(savedPanel.x)) next.x = clamp(savedPanel.x, 0, 96);
+      if (isFiniteNumber(savedPanel.y)) next.y = clamp(savedPanel.y, 0, 96);
+      return next;
+    }
+
+    function mergeSavedSpot(defaultSpot, savedSpot) {
+      if (!defaultSpot || !savedSpot || typeof savedSpot !== 'object') {
+        return defaultSpot ? deepClone(defaultSpot) : null;
+      }
+      const next = deepClone(defaultSpot);
+      if (isFiniteNumber(savedSpot.x)) next.x = clamp(savedSpot.x, 0, 100 - MIN_SPOT_W);
+      if (isFiniteNumber(savedSpot.y)) next.y = clamp(savedSpot.y, 0, 100 - MIN_SPOT_H);
+      if (isFiniteNumber(savedSpot.w)) next.w = clamp(savedSpot.w, MIN_SPOT_W, 100 - next.x);
+      if (isFiniteNumber(savedSpot.h)) next.h = clamp(savedSpot.h, MIN_SPOT_H, 100 - next.y);
+      return next;
+    }
+
+    function buildSlidesById() {
+      const slidesById = {};
+      for (const slide of workingSlides) {
+        slidesById[slide.id] = {
+          id: slide.id,
+          note: slide.note ? deepClone(slide.note) : null,
+          callout: slide.callout ? deepClone(slide.callout) : null,
+          spot: slide.spot ? deepClone(slide.spot) : null
+        };
+      }
+      return slidesById;
+    }
+
+    function buildPresentationState(savedAt = Date.now()) {
+      return {
+        schemaVersion: STORAGE_SCHEMA_VERSION,
+        savedAt,
+        currentSlideId,
+        slidesById: buildSlidesById()
+      };
+    }
+
+    function saveDraftPayload(payload) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    }
+
+    async function writeStateToFile(payload) {
+      const response = await fetch('/__save-presentation-state', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!response.ok) {
+        const message = await response.text().catch(() => '');
+        throw new Error(message || `Save endpoint failed with ${response.status}`);
+      }
+      return response.json().catch(() => ({ ok: true }));
+    }
+
+    async function persistState({ commit = true, status = true, toFile = false } = {}) {
+      if (commit) commitActiveSlideFromDom();
+      const payload = buildPresentationState();
+      let draftSaved = false;
+      try {
+        saveDraftPayload(payload);
+        draftSaved = true;
+      } catch (error) {
+        if (!toFile) setSaveStatus('Save failed');
+      }
+
+      if (toFile) {
+        try {
+          await writeStateToFile(payload);
+          if (status) setSaveStatus('Saved to file');
+          return true;
+        } catch (error) {
+          if (draftSaved) {
+            setSaveStatus('Draft saved only - run node server.js');
+            return false;
+          }
+          setSaveStatus('Save failed');
+          return false;
+        }
+      }
+
+      if (draftSaved) {
+        if (status) {
+          const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          setSaveStatus(`Draft saved ${timestamp}`);
+        }
+        return true;
+      }
+
+      if (status) setSaveStatus('Save failed');
+      return false;
+    }
+
+    function stateTimestamp(state) {
+      return state && isFiniteNumber(state.savedAt) ? state.savedAt : 0;
+    }
+
+    function applyPresentationState(parsed) {
+      if (!parsed || parsed.schemaVersion !== STORAGE_SCHEMA_VERSION || !parsed.slidesById) {
+        return false;
+      }
+      try {
+        const nextSlides = deepClone(defaultSlides);
+        for (const slide of nextSlides) {
+          const saved = parsed.slidesById[slide.id];
+          if (!saved || typeof saved !== 'object') continue;
+          slide.note = mergeSavedPanel(slide.note, saved.note);
+          slide.callout = mergeSavedPanel(slide.callout, saved.callout);
+          slide.spot = mergeSavedSpot(slide.spot, saved.spot);
+        }
+        workingSlides = nextSlides;
+        currentSlideId = typeof parsed.currentSlideId === 'string' && workingSlides.some((slide) => slide.id === parsed.currentSlideId)
+          ? parsed.currentSlideId
+          : workingSlides[0].id;
+        return true;
+      } catch (error) {
+        return false;
+      }
+    }
+
+    function loadDraftState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        return parsed && parsed.schemaVersion === STORAGE_SCHEMA_VERSION ? parsed : null;
+      } catch (error) {
+        setSaveStatus('Storage unavailable');
+        return null;
+      }
+    }
+
+    function loadState() {
+      let loaded = false;
+      let loadedSource = '';
+      const hardcodedState = HARDCODED_PRESENTATION_STATE;
+      if (applyPresentationState(hardcodedState)) {
+        loaded = true;
+        loadedSource = 'file';
+      }
+
+      const draftState = loadDraftState();
+      if (draftState && (!loaded || stateTimestamp(draftState) > stateTimestamp(hardcodedState))) {
+        if (applyPresentationState(draftState)) {
+          loaded = true;
+          loadedSource = 'draft';
+        }
+      }
+
+      if (loadedSource === 'file') setSaveStatus('Loaded file state');
+      if (loadedSource === 'draft') setSaveStatus('Loaded draft state');
+      return loaded;
+    }
+
+    function resetState() {
+      try {
+        for (const key of [STORAGE_KEY, ...OLD_STORAGE_KEYS]) localStorage.removeItem(key);
+      } catch (error) {}
+      location.reload();
+    }
+
+    function render(force = false) {
+      const slide = currentSlide();
+      const index = currentIndex();
+      const shouldRebuildPanels = force || renderedSlideId !== slide.id;
+      setIframeIntro(slide.intro);
+      if (shouldRebuildPanels) {
+        setPanelContent(introNote, slide.note);
+        setPanelContent(callout, slide.callout);
+        renderedSlideId = slide.id;
+      } else {
+        introNote.classList.toggle('visible', Boolean(slide.note));
+        callout.classList.toggle('visible', Boolean(slide.callout));
+      }
+      setSpotlight(slide.dim ? slide.spot : null);
+      setEditable(editToggle.checked);
+      slideLabel.textContent = `Step ${index + 1} / ${workingSlides.length}: ${slide.label}`;
+      progressFill.style.width = `${((index + 1) / workingSlides.length) * 100}%`;
+      backBtn.disabled = index === 0;
+      nextBtn.textContent = index === workingSlides.length - 1 ? 'Restart' : 'Next';
+    }
+
+    function goToIndex(index) {
+      commitActiveSlideFromDom();
+      const nextIndex = clamp(index, 0, workingSlides.length - 1);
+      currentSlideId = workingSlides[nextIndex].id;
+      render(true);
+      persistState({ commit: false });
+    }
+
+    function next() {
+      const index = currentIndex();
+      goToIndex(index === workingSlides.length - 1 ? 0 : index + 1);
+    }
+
+    function back() {
+      goToIndex(Math.max(0, currentIndex() - 1));
+    }
+
+    function markUnsavedAndAutosave() {
+      setSaveStatus('Unsaved changes');
+      clearTimeout(autosaveTimer);
+      autosaveTimer = setTimeout(() => persistState(), 350);
+    }
+
+    function pointerElement(target) {
+      return target && target.nodeType === Node.TEXT_NODE ? target.parentElement : target;
+    }
+
+    function panelDragTarget(target) {
+      const baseTarget = pointerElement(target);
+      if (!baseTarget || typeof baseTarget.closest !== 'function') return null;
+      const panel = baseTarget.closest('.callout.visible, .note-panel.visible');
+      if (!panel) return null;
+      return baseTarget.closest('.drag-handle') ? panel : null;
+    }
+
+    stage.addEventListener('pointerdown', (event) => {
+      if (!editToggle.checked) return;
+      const baseTarget = pointerElement(event.target);
+      if (!baseTarget || typeof baseTarget.closest !== 'function') return;
+
+      const resizeHandle = baseTarget.closest('.resize-handle');
+      const panelTarget = panelDragTarget(baseTarget);
+      const spotlightTarget = baseTarget.closest('.spotlight.visible');
+      const target = resizeHandle ? spotlight : panelTarget || spotlightTarget;
+      if (!target) return;
+
+      const rect = target.getBoundingClientRect();
+      const stageRect = stage.getBoundingClientRect();
+      drag = {
+        target,
+        mode: resizeHandle ? 'resize' : 'move',
+        edge: resizeHandle ? resizeHandle.dataset.resize : null,
+        pointerId: event.pointerId,
+        startX: event.clientX,
+        startY: event.clientY,
+        left: rect.left - stageRect.left,
+        top: rect.top - stageRect.top,
+        width: rect.width,
+        height: rect.height,
+        stageWidth: stageRect.width,
+        stageHeight: stageRect.height
+      };
+      target.setPointerCapture?.(event.pointerId);
+      event.preventDefault();
+    });
+
+    stage.addEventListener('pointermove', (event) => {
+      if (!drag) return;
+      const dx = event.clientX - drag.startX;
+      const dy = event.clientY - drag.startY;
+
+      if (drag.mode === 'resize' && drag.target === spotlight) {
+        const canResizeX = drag.edge === 'right' || drag.edge === 'corner';
+        const canResizeY = drag.edge === 'bottom' || drag.edge === 'corner';
+        const maxWidth = drag.stageWidth - drag.left;
+        const maxHeight = drag.stageHeight - drag.top;
+        const minWidth = (MIN_SPOT_W / 100) * drag.stageWidth;
+        const minHeight = (MIN_SPOT_H / 100) * drag.stageHeight;
+        const nextWidth = clamp(drag.width + (canResizeX ? dx : 0), minWidth, maxWidth);
+        const nextHeight = clamp(drag.height + (canResizeY ? dy : 0), minHeight, maxHeight);
+        spotlight.style.setProperty('--w', `${(nextWidth / drag.stageWidth) * 100}%`);
+        spotlight.style.setProperty('--h', `${(nextHeight / drag.stageHeight) * 100}%`);
+        return;
+      }
+
+      const width = drag.target.offsetWidth;
+      const height = drag.target.offsetHeight;
+      const left = clamp(drag.left + dx, 0, drag.stageWidth - width);
+      const top = clamp(drag.top + dy, 0, drag.stageHeight - height);
+
+      if (drag.target === spotlight) {
+        spotlight.style.setProperty('--x', `${(left / drag.stageWidth) * 100}%`);
+        spotlight.style.setProperty('--y', `${(top / drag.stageHeight) * 100}%`);
+        return;
+      }
+
+      drag.target.style.left = `${(left / drag.stageWidth) * 100}%`;
+      drag.target.style.top = `${(top / drag.stageHeight) * 100}%`;
+      drag.target.style.right = 'auto';
+    });
+
+    function endDrag() {
+      if (!drag) return;
+      drag.target.releasePointerCapture?.(drag.pointerId);
+      drag = null;
+      setSaveStatus('Unsaved changes');
+      persistState();
+    }
+
+    window.addEventListener('pointerup', endDrag);
+    window.addEventListener('pointercancel', endDrag);
+
+    stage.addEventListener('input', (event) => {
+      if (event.target && event.target.classList && event.target.classList.contains('editable-field')) {
+        markUnsavedAndAutosave();
+      }
+    });
+
+    saveBtn.addEventListener('click', () => persistState({ toFile: true }));
+    resetBtn.addEventListener('click', resetState);
+    backBtn.addEventListener('click', back);
+    nextBtn.addEventListener('click', next);
+    editToggle.addEventListener('change', () => setEditable(editToggle.checked));
+
+    window.addEventListener('keydown', (event) => {
+      const active = document.activeElement;
+      if (active && active.classList && active.classList.contains('editable-field')) return;
+      if (event.key === 'ArrowRight' || event.key === ' ') { event.preventDefault(); next(); }
+      if (event.key === 'ArrowLeft') { event.preventDefault(); back(); }
+    });
+
+    function setWeakDemoPassword() {
+      try {
+        const doc = frame.contentDocument;
+        const newPassInput = doc && doc.getElementById('newPassphraseInput');
+        if (newPassInput) {
+          newPassInput.value = 'mesa';
+          newPassInput.dispatchEvent(new frame.contentWindow.Event('input', { bubbles: true }));
+        }
+      } catch (error) {}
+    }
+
+    frame.addEventListener('load', () => {
+      frameLoaded = true;
+      setIframeIntro(currentSlide().intro);
+      setWeakDemoPassword();
+      try {
+        const doc = frame.contentDocument;
+        doc.addEventListener('keydown', (event) => {
+          if (event.key === 'ArrowRight' || event.key === ' ') { event.preventDefault(); next(); }
+          if (event.key === 'ArrowLeft') { event.preventDefault(); back(); }
+        });
+      } catch (error) {}
+    });
+
+    loadState();
+    render(true);
+  </script>
+</body>
+</html>
+

@@ -262,9 +262,38 @@
     .recommend-plain p:last-child {
       margin-bottom: 0;
     }
+    .short-pass-variants {
+      margin-top: 10px;
+      display: grid;
+      gap: 10px;
+    }
+    .short-pass-callout {
+      border-radius: 4px;
+      font-size: 13px;
+      line-height: 1.45;
+      color: #1f2d42;
+    }
+    .short-pass-label {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #4b5563;
+      font-weight: 700;
+    }
+    .short-pass-callout p {
+      margin: 0;
+    }
+    .short-pass-b {
+      border-left: 3px solid #8ea0b8;
+      border: 1px solid #d6dde8;
+      background: #fff;
+      padding: 10px 12px 10px 10px;
+    }
 
     .step-card { background:#fff; padding: 22px 24px; }
-    .step-row { display:flex; align-items:center; gap:10px; margin:18px 0 8px; font-weight:700; color:#111827; }
+    .step-row { display:flex; align-items:center; gap:10px; margin:20px 0 10px; font-weight:700; color:#111827; }
     .step-row:first-child { margin-top: 0; }
     .step-row.complete { color: #166534; }
     .step-row.active { color: var(--blue-dark); }
@@ -277,6 +306,7 @@
     .input-row {
       height: 40px; border: 1px solid #b9c8df; border-radius: 4px; background: #fff;
       display:flex; align-items:center; justify-content:space-between; padding:0 12px; color:#7a8798;
+      margin-bottom: 4px;
     }
     .input-row input {
       width: 100%;
@@ -287,12 +317,13 @@
       background: transparent;
     }
     .eye { color:#344a69; }
-    .strength { display:flex; align-items:center; gap:8px; margin:14px 0 14px; font-size:13px; }
-    .bars { display:flex; gap:4px; }
-    .bars span { width:34px; height:6px; border-radius:8px; background:#d1d9e6; }
-    .bars span:first-child { background: var(--blue); }
+    .strength { display:flex; align-items:center; gap:12px; margin:14px 0 6px; font-size:14px; }
+    .strength strong { font-size: 14px; }
+    .bars { display:flex; gap:5px; }
+    .bars span { width:42px; height:8px; border-radius:8px; background:#d1d9e6; }
+    .bars span:first-child { background:#d1d9e6; }
     .strength-hint {
-      margin: -6px 0 14px;
+      margin: 2px 0 14px 34px;
       font-size: 13px;
       color: #4b5563;
       display: flex;
@@ -303,10 +334,69 @@
       color: var(--blue);
       font-weight: 700;
     }
+    .lifetime-note {
+      margin: 2px 0 10px;
+      border: 1px solid #d6dde8;
+      border-left: 4px solid var(--blue);
+      border-radius: 4px;
+      padding: 9px 12px;
+      background: #f7fafc;
+      color: #374151;
+      line-height: 1.3;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      width: auto;
+      min-width: 300px;
+      max-width: 100%;
+    }
+    .lifetime-note strong {
+      color: #111827;
+      font-weight: 700;
+      font-size: 12px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+    .lifetime-value {
+      color: var(--blue-dark);
+      font-weight: 800;
+      font-size: 20px;
+      letter-spacing: 0;
+      white-space: nowrap;
+    }
 
-    .feedback-wrap { display:grid; grid-template-columns: 1fr 180px; gap:18px; margin-bottom: 4px; }
+    .manager-inline {
+      border: 1px solid #d6dde8;
+      border-left: 3px solid var(--blue);
+      border-radius: 4px;
+      background: #fbfdff;
+      padding: 12px 14px;
+      margin: 18px 0 10px;
+      font-size: 13px;
+      line-height: 1.45;
+      color: #374151;
+    }
+    .manager-inline strong {
+      display: block;
+      margin-bottom: 3px;
+      color: #111827;
+      font-size: 13px;
+    }
+    .manager-inline a {
+      display: inline-block;
+      margin-top: 5px;
+      color: var(--blue);
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .manager-inline a:hover {
+      text-decoration: underline;
+    }
+
+    .feedback-wrap { display:grid; grid-template-columns: 1fr; gap:18px; margin-bottom: 4px; }
     .checks { font-size:13px; line-height:1.65; }
     .check-line { color: #8a6519; display: flex; align-items: baseline; gap: 7px; }
+    .check-line { min-height: 24px; }
     .check-line.check-hidden { display: none; }
     .check-line::before {
       width: 16px;
@@ -334,20 +424,17 @@
     }
     .check-line.ok-state { color: var(--ok); }
     .check-line.warn-state { color: #8a6519; }
-    .strength-value { font-weight: 700; color: #1f3550; }
+    .strength-value {
+      min-width: 84px;
+      border-radius: 999px;
+      background: #f3f6fa;
+      padding: 3px 9px;
+      font-weight: 800;
+      color: #1f3550;
+      text-align: center;
+    }
     .ok { color: var(--ok); }
     .warn { color: #8a6519; }
-    .tips {
-      border: 1px solid #d6dde8; background:#f9fafb; border-radius:6px; padding:12px; font-size:13px; color:#1f2d42;
-    }
-    .tips a {
-      color: var(--blue);
-      font-weight: 700;
-      text-decoration: none;
-    }
-    .tips a:hover {
-      text-decoration: underline;
-    }
     .coach {
       margin: 0 0 12px;
       padding: 10px 12px;
@@ -367,6 +454,23 @@
       cursor: not-allowed;
     }
     .note { font-size: 13px; color:#2c3f57; margin: 0 0 12px; }
+    .breach-note {
+      border: 1px solid #e0c078;
+      border-left: 3px solid #b45309;
+      border-radius: 4px;
+      background: #fff7ed;
+      color: #7a560d;
+      padding: 10px 12px;
+      line-height: 1.45;
+      margin: 8px 0 4px;
+    }
+    .breach-note strong {
+      display: block;
+      margin-bottom: 2px;
+      color: #7a560d;
+      font-size: 13px;
+    }
+    .note.note-hidden { display: none; }
     .support-strip {
       border-top: 1px solid #e5e7eb;
       margin-top: 12px;
@@ -425,6 +529,12 @@
       .feedback-wrap { grid-template-columns: 1fr; }
       .logo img { width: 130px; }
       .btn, .update { font-size: 20px; }
+      .short-pass-variants {
+        gap: 8px;
+      }
+      .short-pass-callout {
+        font-size: 12px;
+      }
     }
   </style>
 </head>
@@ -494,30 +604,43 @@
       </div>
 
       <h1 class="new-title">Create a stronger Monash <span class="blue">passphrase</span></h1>
-      <p class="title-reason">Use this page to choose a passphrase that is easier to remember and harder for others to guess.</p>
+      <p class="title-reason">Choose a passphrase that is memorable for you and difficult for others to guess.</p>
 
       <div class="recommend-plain">
         <strong>Recommended approach</strong>
         <p>Use 4 or more unrelated words. This usually gets you past 13 characters and can stay all lower case.</p>
-        <p>Prefer a shorter password? Use 8-12 characters with at least three types: uppercase letters, lowercase letters, numbers and symbols.</p>
+        <div class="short-pass-variants" aria-label="Short password callout variants">
+          <div class="short-pass-callout short-pass-b">
+            <span class="short-pass-label">Short password option</span>
+            <p>Prefer a shorter password? Use 8-12 characters with at least three types: uppercase letters, lowercase letters, numbers and symbols.</p>
+          </div>
+        </div>
+      </div>
+      <div class="manager-inline">
+        <strong>Are you academic staff?</strong>
+        You are entitled to a free and secure password manager.
+        <br><a href="#">Learn how to get and use it here.</a>
       </div>
 
       <div class="step-card">
         <div id="stepOne" class="step-row active"><span class="num">1</span>Enter your new passphrase</div>
+        <div class="strength-hint"><span class="hint-icon">ⓘ</span><span>Safer path: use 13+ characters. It can be all lower case and harder to crack.</span></div>
         <div class="input-row"><input id="newPassphraseInput" type="password" placeholder="Type your new passphrase" /><span class="eye">⊘</span></div>
 
         <div class="strength"><strong>Strength</strong><span id="strengthValue" class="strength-value">Weak</span><div id="strengthBars" class="bars"><span></span><span></span><span></span><span></span></div></div>
-        <div class="strength-hint"><span class="hint-icon">ⓘ</span><span>Easier safer path: use 13+ characters. It can be all lower case and harder to crack.</span></div>
+        <div class="lifetime-note" id="lifetimeNote">
+          <strong>Password lifetime:</strong>
+          <span id="lifetimeValue" class="lifetime-value"></span>
+        </div>
 
         <div class="feedback-wrap">
           <div class="checks">
             <div id="checkLength" class="check-line warn-state check-hidden">At least 13 characters</div>
-            <div id="checkBreach" class="check-line warn-state check-hidden">Not found in known breached-password lists</div>
+            <p id="breachNote" class="note breach-note note-hidden"><strong>Looks like a common/breached pattern</strong>This passphrase appears in a known breach list. Choose a different one to protect your Monash account.</p>
             <div id="checkPersonal" class="check-line warn-state check-hidden">Avoid your username, name or Monash ID</div>
             <div id="checkReuse" class="check-line warn-state check-hidden">Avoid using an old password or small changes</div>
             <div id="checkMatch" class="check-line warn-state check-hidden">Confirmation does not match yet</div>
           </div>
-          <div class="tips"><strong>Free password manager</strong><br><br>Academic staff can use the Monash password manager to create and save a strong password for Monash services.<br><br><a href="#">How to get and use it</a></div>
         </div>
 
         <div id="stepTwo" class="step-row"><span class="num">2</span>Confirm your new passphrase</div>
@@ -527,7 +650,6 @@
         <div class="input-row"><input id="currentPasswordInput" type="password" placeholder="Current password" /><span class="eye">⊘</span></div>
 
         <button id="updateButton" class="update" type="button" disabled>Complete the checks to continue</button>
-        <p class="note">We check new passphrases against a database of over 1 billion stolen passwords.</p>
       </div>
     </div>
   </section>
@@ -549,11 +671,13 @@
     const confirmInput = document.getElementById('confirmPassphraseInput');
     const strengthValue = document.getElementById('strengthValue');
     const strengthBars = document.querySelectorAll('#strengthBars span');
+    const lifetimeNote = document.getElementById('lifetimeNote');
+    const lifetimeValue = document.getElementById('lifetimeValue');
     const checkLength = document.getElementById('checkLength');
-    const checkBreach = document.getElementById('checkBreach');
     const checkPersonal = document.getElementById('checkPersonal');
     const checkReuse = document.getElementById('checkReuse');
     const checkMatch = document.getElementById('checkMatch');
+    const breachNote = document.getElementById('breachNote');
     const currentInput = document.getElementById('currentPasswordInput');
     const stepOne = document.getElementById('stepOne');
     const stepTwo = document.getElementById('stepTwo');
@@ -583,7 +707,17 @@
       const typeCount = [hasUpper, hasLower, hasNumber, hasSymbol].filter(Boolean).length;
       const shortPasswordReady = hasMinLength && !has13 && typeCount >= 3;
       const policyReady = has13 || shortPasswordReady;
-      const hasBreachRisk = ['password', 'monash', '1234', 'qwerty'].some(t => lower.includes(t));
+      const breachPatterns = [
+        /^password(?:\\d+)?$/,
+        /^qwerty(?:\\d+)?$/,
+        /^letmein(?:\\d+)?$/,
+        /^welcome(?:\\d+)?$/,
+        /^admin(?:\\d+)?$/,
+        /^1234(?:5678|56789)?$/,
+        /^abcd(?:1234)?$/,
+        /^iloveyou(?:\\d+)?$/
+      ];
+      const hasBreachRisk = breachPatterns.some((pattern) => pattern.test(lower));
       const hasPersonalHint = ['monash', 'username', 'student', 'id'].some(t => lower.includes(t));
       const looksLikeSmallChange = /\\d$/.test(value) || /(2024|2025|2026)$/.test(value);
       const matches = confirm.length > 0 && value === confirm;
@@ -598,28 +732,40 @@
 
       setCheck(checkLength, lengthOkText, lengthWarnText, policyReady);
       showCheck(checkLength, value.length > 0 && !policyReady);
-      showCheck(checkBreach, policyReady);
       showCheck(checkPersonal, policyReady && hasPersonalHint);
       showCheck(checkReuse, policyReady && looksLikeSmallChange);
       showCheck(checkMatch, confirm.length > 0);
-      setCheck(checkBreach, 'Not found in known breached-password lists', 'Looks like a common/breached pattern', value.length > 0 && !hasBreachRisk);
+      breachNote.classList.toggle('note-hidden', !(value.length > 0 && hasBreachRisk));
       setCheck(checkPersonal, 'No obvious username/name/ID hints detected', 'Avoid your username, name or Monash ID', value.length > 0 && !hasPersonalHint);
       setCheck(checkReuse, 'Does not look like a simple old-password change', 'Avoid using an old password or small changes', value.length > 0 && !looksLikeSmallChange);
       setCheck(checkMatch, 'Confirmation matches', 'Confirmation does not match yet', matches);
 
-      let score = 0;
-      if (policyReady) score += 1;
-      if (!hasBreachRisk && value.length > 0) score += 1;
-      if (!hasPersonalHint && value.length > 0) score += 1;
-      if (!looksLikeSmallChange && value.length > 0) score += 1;
-
       const states = ['Weak', 'Fair', 'Better', 'Strong', 'Very strong'];
-      strengthValue.textContent = states[score];
-      strengthBars.forEach((bar, i) => {
-        bar.style.background = i < score ? '#006dae' : '#d1d9e6';
-      });
+      const lifetimeByScore = ['2 weeks', '1 month', '2 months', '4 months', '6 months'];
+      const strengthColors = ['#b42318', '#b45309', '#b7791f', '#2f6f4e', '#1f7a4d'];
+      const strengthBackgrounds = ['#fef3f2', '#fff7ed', '#fef9c3', '#edf7f1', '#e9f7ef'];
+      let score = 0;
 
-      const passphraseReady = score >= 3 && policyReady;
+      if (value.length > 0 && policyReady && !hasBreachRisk) {
+        score = has13 ? 2 : 1;
+        score += 1;
+        if (!hasPersonalHint) score += 1;
+        if (!looksLikeSmallChange) score += 1;
+        score = Math.min(score, has13 ? 4 : 3);
+      }
+
+      strengthValue.textContent = states[score];
+      strengthValue.style.color = value.length > 0 ? strengthColors[score] : '#1f3550';
+      strengthValue.style.background = value.length > 0 ? strengthBackgrounds[score] : '#f3f6fa';
+      lifetimeNote.style.borderLeftColor = value.length > 0 ? strengthColors[score] : '#006dae';
+      lifetimeValue.style.color = value.length > 0 ? strengthColors[score] : '#005a9c';
+      strengthBars.forEach((bar, i) => {
+        const filledBars = value.length > 0 ? Math.max(1, score) : 0;
+        bar.style.background = i < filledBars ? strengthColors[score] : '#d1d9e6';
+      });
+      lifetimeValue.textContent = value.length > 0 ? lifetimeByScore[score] : '';
+
+      const passphraseReady = score >= 3 && policyReady && !hasBreachRisk;
       stepOne.classList.toggle('complete', passphraseReady);
       stepOne.classList.toggle('active', !passphraseReady);
       stepTwo.classList.toggle('complete', matches);
